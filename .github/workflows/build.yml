@@ -13,10 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: clone riscv toolchain
-        run: |
-          git clone --recursive https://github.com/riscv/riscv-gnu-toolchain
-          cd riscv-gnu-toolchain
 
       - name: install dependencies
         run: sudo apt update && sudo apt install -y \
