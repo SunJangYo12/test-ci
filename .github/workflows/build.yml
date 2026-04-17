@@ -1,0 +1,45 @@
+name: Build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: clone riscv toolchain
+        run: |
+          git clone https://github.com/riscv/riscv-gnu-toolchain
+          cd riscv-gnu-toolchain
+          git submodule update --init --recursive --progress --recommend-shallow
+
+      - name: install dependencies
+        run: sudo apt update && sudo apt install -y \
+          autoconf automake autotools-dev curl python3 \
+          libmpc-dev libmpfr-dev libgmp-dev gawk \
+          build-essential bison flex texinfo gperf \
+          libtool patchutils bc zlib1g-dev
+
+      - name: build toolchain
+        run: |
+          cd riscv-gnu-toolchain
+          ./configure --prefix=/opt/riscv \
+            --with-arch=rv64gc \
+            --with-abi=lp64d
+          make -j $(nproc) newlib
+
+      - name: tarball build
+        run: tar czvf riscv.tar.gz -C /opt/ riscv/
+
+      - name: upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: riscv64-elf-ubuntu-20.04
+          path: riscv.tar.gz
+
