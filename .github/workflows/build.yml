@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-     - name: clone riscv toolchain
+      - name: clone riscv toolchain
         run: |
           git clone --recursive https://github.com/riscv/riscv-gnu-toolchain
           cd riscv-gnu-toolchain
@@ -24,10 +24,8 @@ jobs:
       - name: build toolchain
         run: |
           cd riscv-gnu-toolchain
-          ./configure --prefix=/opt/riscv \
-            --with-arch=rv64i \
-            --with-abi=lp64
-          make -j $(nproc) newlib
+          ./configure --prefix=/opt/riscv --with-arch=rv64i --with-abi=lp64
+          make -j $(nproc)
 
       - name: tarball build
         run: tar czvf riscv.tar.gz -C /opt/ riscv/
