@@ -37,3 +37,9 @@ jobs:
       - name: tarball build
         run: tar czvf riscv.tar.gz -C /opt/ riscv/
 
+      - uses: actions/upload-artifact@v2
+        with:
+          name: elfelf
+          path: riscv.tar.gz
+
+
