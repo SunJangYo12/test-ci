@@ -15,9 +15,8 @@ jobs:
 
       - name: clone riscv toolchain
         run: |
-          git clone https://github.com/riscv/riscv-gnu-toolchain
+          git clone --recursive https://github.com/riscv/riscv-gnu-toolchain
           cd riscv-gnu-toolchain
-          git submodule update --init --recursive --progress --recommend-shallow
 
       - name: install dependencies
         run: sudo apt update && sudo apt install -y \
@@ -30,8 +29,8 @@ jobs:
         run: |
           cd riscv-gnu-toolchain
           ./configure --prefix=/opt/riscv \
-            --with-arch=rv64gc \
-            --with-abi=lp64d
+            --with-arch=rv64i \
+            --with-abi=lp64
           make -j $(nproc) newlib
 
       - name: tarball build
@@ -40,6 +39,6 @@ jobs:
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: riscv64-elf-ubuntu-20.04
+          name: riscv64-elf-ubuntu-latest
           path: riscv.tar.gz
 
