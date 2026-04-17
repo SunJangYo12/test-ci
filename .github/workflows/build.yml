@@ -37,9 +37,9 @@ jobs:
       - name: tarball build
         run: tar czvf riscv.tar.gz -C /opt/ riscv/
 
-      - uses: actions/upload-artifact@v2
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: elfelf
+          name: riscv64-elf-ubuntu-20.04
           path: riscv.tar.gz
-
 
