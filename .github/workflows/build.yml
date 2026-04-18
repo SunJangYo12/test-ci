@@ -21,7 +21,7 @@ jobs:
           cd riscv-gnu-toolchain
 
       - name: install dependencies
-        run: apt-get update && DEBIAN_FRONTED=noninteractive apt-get install -y autoconf automake autotools-dev curl python3 libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev
+        run: sudo apt-get update && sudo apt-get install autoconf automake autotools-dev curl python3 libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev
 
       - name: build toolchain
         run: |
