@@ -1,4 +1,4 @@
-name: CIz
+name: CI
 on: [push]
 jobs:
   build:
@@ -10,7 +10,7 @@ jobs:
 
 
 
-name: Debug with tmate
+name: zzDebug with tmate
 on: [push]
 jobs:
   setup-tmate:
