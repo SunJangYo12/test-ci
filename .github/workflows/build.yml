@@ -1,16 +1,4 @@
-name: CI
-on: [push]
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-
-
-
-name: zzDebug with tmate
+name: Debug with tmate
 on: [push]
 jobs:
   setup-tmate:
@@ -33,5 +21,4 @@ jobs:
     - name: Display SSH command
       run: |
         # Send a Slack message to someone telling them they can ssh to ${{ needs.setup-tmate.outputs.ssh-address }}
-
 
