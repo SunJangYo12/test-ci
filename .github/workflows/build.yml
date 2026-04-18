@@ -36,3 +36,10 @@ jobs:
           name: riscv64-elf-ubuntu-latest
           path: riscv.tar.gz
 
+      - name: Upload Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: riscv.tar.gz
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
