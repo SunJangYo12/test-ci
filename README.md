@@ -1,3 +1,4 @@
+```
  1098  rustup doc
  1099  exit
  1100  ls
@@ -2001,3 +2002,12 @@
 
 export TMPDIR=`pwd`
 gh run download 24598815877
+
+# gh api repos/sunjangyo12/test-ci/actions/artifacts
+
+echo "sleep 3 jam..."
+sleep 10800
+echo "done."
+gh api https://api.github.com/repos/SunJangYo12/test-ci/actions/artifacts/6509558398/zip > x.zip
+
+```

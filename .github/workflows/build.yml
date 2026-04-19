@@ -1,24 +1,46 @@
-name: Debug with tmate
-on: [push]
+name: Build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
 jobs:
-  setup-tmate:
+  build:
     runs-on: ubuntu-latest
-    outputs:
-      ssh-command: ${{ steps.tmate.outputs.ssh-command }}
-      ssh-address: ${{ steps.tmate.outputs.ssh-address }}
+
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup tmate session
-      id: tmate
-      uses: mxschmitt/action-tmate@v3
-      with:
-        detached: true
-        
-  use-ssh-command:
-    needs: setup-tmate
-    runs-on: ubuntu-latest
-    steps:
-    - name: Display SSH command
-      run: |
-        # Send a Slack message to someone telling them they can ssh to ${{ needs.setup-tmate.outputs.ssh-address }}
+      - uses: actions/checkout@v4
+
+      - name: clone riscv toolchain
+        run: |
+          git clone --recursive https://github.com/riscv/riscv-gnu-toolchain
+          cd riscv-gnu-toolchain
+          git checkout 2021.03.06
+
+      - name: install dependencies
+        run: apt-get update && DEBIAN_FRONTED=noninteractive apt-get install -y autoconf automake autotools-dev curl python3 libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev
+
+      - name: build toolchain
+        run: |
+          cd riscv-gnu-toolchain
+          ./configure --prefix=/opt/riscv --with-arch=rv64i --with-abi=lp64
+          make -j $(nproc)
+
+      - name: tarball build
+        run: tar czvf riscv.tar.gz -C /opt/ riscv/
+
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: riscv64-elf-ubuntu-latest
+          path: riscv.tar.gz
+
+      - name: Upload Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: riscv.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
