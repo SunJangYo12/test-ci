@@ -13,18 +13,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: install dependencies
+        run: sudo apt-get update && sudo apt-get install -y autoconf automake autotools-dev curl python3 libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev
+
       - name: clone riscv toolchain
         run: |
+          git clone https://github.com/sunjangyo12/test-ci
           git clone https://github.com/riscv/riscv-gnu-toolchain
           cd riscv-gnu-toolchain
           git checkout 2021.03.06
           git submodule update --init --recursive
+          cp ../test-ci/toolchain-riscv/configure.host riscv-newlib/newlib
 
       - name: build toolchain
         run: |
           cd riscv-gnu-toolchain
-          mkdir -p /opt/riscv
-          cp riscv-newlib/newlib/configure.host /opt/riscv
+          ./configure --prefix=/opt/riscv --with-arch=rv64i --with-abi=lp64
+          sudo make -j $(nproc)
 
       - name: tarball build
         run: tar czvf riscv.tar.gz -C /opt/ riscv/
