@@ -27,7 +27,7 @@ jobs:
         run: |
           cd riscv-gnu-toolchain
           ./configure --prefix=/opt/riscv --with-arch=rv64i --with-abi=lp64
-          make -j $(nproc)
+          sudo make -j $(nproc)
 
       - name: tarball build
         run: tar czvf riscv.tar.gz -C /opt/ riscv/
