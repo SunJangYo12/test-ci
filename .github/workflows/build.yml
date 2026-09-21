@@ -55,11 +55,34 @@ jobs:
           scripts/config --enable CONFIG_SERIAL_8250
           scripts/config --enable CONFIG_SERIAL_8250_CONSOLE
 
+          # Kcov
           scripts/config --enable CONFIG_KCOV
 
+          # Debug/GDB
           scripts/config --enable CONFIG_DEBUG_KERNEL
           scripts/config --enable CONFIG_DEBUG_INFO
           scripts/config --enable CONFIG_FRAME_POINTER
+          scripts/config --enable CONFIG_KALLSYMS
+          scripts/config --enable CONFIG_KALLSYMS_ALL
+          scripts/config --enable CONFIG_GDB_SCRIPTS
+
+          # ftrace
+          scripts/config --enable CONFIG_FTRACE
+          scripts/config --enable CONFIG_FUNCTION_TRACER
+          scripts/config --enable CONFIG_FUNCTION_GRAPH_TRACER
+
+          # kprobes
+          scripts/config --enable CONFIG_KPROBES
+          scripts/config --enable CONFIG_KPROBE_EVENTS
+
+          # BPF
+          scripts/config --enable CONFIG_BPF
+          scripts/config --enable CONFIG_BPF_SYSCALL
+          scripts/config --enable CONFIG_BPF_EVENTS
+
+          # tracepoints / perf
+          scripts/config --enable CONFIG_PERF_EVENTS
+
 
           make olddefconfig
 
