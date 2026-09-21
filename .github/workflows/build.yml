@@ -99,11 +99,3 @@ jobs:
           name: linux-kernel-x86_64
           path: linux-kernel-x86_64.tar.gz
 
-      - name: Upload Release
-        if: github.event_name == 'push'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: kernel-${{ github.run_number }}
-          files: linux-kernel-x86_64.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
