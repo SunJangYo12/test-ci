@@ -1,4 +1,4 @@
-name: Build
+name: Build Linux Kernel
 
 on:
   push:
@@ -13,37 +13,97 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: install dependencies
-        run: sudo apt-get update && sudo apt-get install -y autoconf automake autotools-dev curl python3 libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev
-
-      - name: clone riscv toolchain
+      - name: Install dependencies
         run: |
-          git clone https://github.com/sunjangyo12/test-ci
-          git clone https://github.com/riscv/riscv-gnu-toolchain
-          cd riscv-gnu-toolchain
-          git checkout 2021.03.06
-          git submodule update --init --recursive
-          cp ../test-ci/toolchain-riscv/configure.host riscv-newlib/newlib
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            bc \
+            bison \
+            flex \
+            libssl-dev \
+            libelf-dev \
+            dwarves \
+            cpio \
+            kmod \
+            git \
+            rsync \
+            wget \
+            xz-utils
 
-      - name: build toolchain
+      - name: Clone Linux kernel
         run: |
-          cd riscv-gnu-toolchain
-          ./configure --prefix=/opt/riscv --with-arch=rv64i --with-abi=lp64
-          sudo make -j $(nproc)
+          git clone --depth=1 \
+            https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git \
+            linux
 
-      - name: tarball build
-        run: tar czvf riscv.tar.gz -C /opt/ riscv/
+      - name: Configure kernel
+        run: |
+          cd linux
 
-      - name: upload artifact
+          make x86_64_defconfig
+
+          scripts/config --enable CONFIG_NET
+          scripts/config --enable CONFIG_PACKET
+          scripts/config --enable CONFIG_INET
+
+          scripts/config --enable CONFIG_VIRTIO
+          scripts/config --enable CONFIG_VIRTIO_PCI
+          scripts/config --enable CONFIG_VIRTIO_NET
+
+          scripts/config --enable CONFIG_TTY
+          scripts/config --enable CONFIG_SERIAL_8250
+          scripts/config --enable CONFIG_SERIAL_8250_CONSOLE
+
+          scripts/config --enable CONFIG_KCOV
+          scripts/config --enable CONFIG_KCOV_ENABLE_COMPARISONS
+
+          scripts/config --enable CONFIG_DEBUG_KERNEL
+          scripts/config --enable CONFIG_DEBUG_INFO
+          scripts/config --enable CONFIG_FRAME_POINTER
+
+          make olddefconfig
+
+      - name: Show kernel config
+        run: |
+          cd linux
+
+          grep -E \
+          '^CONFIG_(NET|PACKET|INET|VIRTIO|VIRTIO_PCI|VIRTIO_NET|KCOV|KCOV_ENABLE_COMPARISONS|DEBUG_KERNEL|DEBUG_INFO|FRAME_POINTER|TTY|SERIAL_8250|SERIAL_8250_CONSOLE)=' \
+          .config
+
+      - name: Build kernel
+        run: |
+          cd linux
+          make -j$(nproc)
+
+      - name: Package kernel
+        run: |
+          mkdir -p output
+
+          cp linux/arch/x86/boot/bzImage \
+             output/bzImage
+
+          cp linux/vmlinux \
+             output/vmlinux
+
+          cp linux/.config \
+             output/kernel.config
+
+          tar czvf linux-kernel-x86_64.tar.gz \
+             -C output .
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: riscv64-elf-ubuntu-latest
-          path: riscv.tar.gz
+          name: linux-kernel-x86_64
+          path: linux-kernel-x86_64.tar.gz
 
       - name: Upload Release
-        uses: softprops/action-gh-release@v1
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
         with:
-          files: riscv.tar.gz
+          tag_name: kernel-${{ github.run_number }}
+          files: linux-kernel-x86_64.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
