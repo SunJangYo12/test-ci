@@ -56,7 +56,7 @@ jobs:
           scripts/config --enable CONFIG_SERIAL_8250_CONSOLE
 
           scripts/config --enable CONFIG_KCOV
-          scripts/config --enable CONFIG_KCOV_ENABLE_COMPARISONS
+          scripts/config --disable CONFIG_KCOV_ENABLE_COMPARISONS
 
           scripts/config --enable CONFIG_DEBUG_KERNEL
           scripts/config --enable CONFIG_DEBUG_INFO

@@ -2010,4 +2010,6 @@ sleep 10800
 echo "done."
 gh api https://api.github.com/repos/SunJangYo12/test-ci/actions/artifacts/6509558398/zip > x.zip
 
+gh run download 35599977889 -n linux-kernel-x86_64
+
 ```
