@@ -1,4 +1,4 @@
-name: Build Linux Kernel
+name: Build Linux 5.15 Kernel
 
 on:
   push:
@@ -27,14 +27,14 @@ jobs:
             cpio \
             kmod \
             git \
-            rsync \
-            wget \
-            xz-utils
+            rsync
 
-      - name: Clone Linux kernel
+      - name: Clone Linux 5.15
         run: |
-          git clone --depth=1 \
-            https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git \
+          git clone \
+            --depth=1 \
+            --branch v5.15.190 \
+            https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git \
             linux
 
       - name: Configure kernel
@@ -56,7 +56,6 @@ jobs:
           scripts/config --enable CONFIG_SERIAL_8250_CONSOLE
 
           scripts/config --enable CONFIG_KCOV
-          scripts/config --disable CONFIG_KCOV_ENABLE_COMPARISONS
 
           scripts/config --enable CONFIG_DEBUG_KERNEL
           scripts/config --enable CONFIG_DEBUG_INFO
@@ -64,12 +63,12 @@ jobs:
 
           make olddefconfig
 
-      - name: Show kernel config
+      - name: Show config
         run: |
           cd linux
 
           grep -E \
-          '^CONFIG_(NET|PACKET|INET|VIRTIO|VIRTIO_PCI|VIRTIO_NET|KCOV|KCOV_ENABLE_COMPARISONS|DEBUG_KERNEL|DEBUG_INFO|FRAME_POINTER|TTY|SERIAL_8250|SERIAL_8250_CONSOLE)=' \
+          '^CONFIG_(NET|PACKET|INET|VIRTIO|VIRTIO_PCI|VIRTIO_NET|KCOV|DEBUG_KERNEL|DEBUG_INFO|FRAME_POINTER|SERIAL_8250_CONSOLE)=' \
           .config
 
       - name: Build kernel
@@ -77,25 +76,19 @@ jobs:
           cd linux
           make -j$(nproc)
 
-      - name: Package kernel
+      - name: Package
         run: |
           mkdir -p output
 
-          cp linux/arch/x86/boot/bzImage \
-             output/bzImage
+          cp linux/arch/x86/boot/bzImage output/
+          cp linux/vmlinux output/
+          cp linux/.config output/kernel.config
 
-          cp linux/vmlinux \
-             output/vmlinux
-
-          cp linux/.config \
-             output/kernel.config
-
-          tar czvf linux-kernel-x86_64.tar.gz \
-             -C output .
+          tar czvf linux-5.15-x86_64.tar.gz \
+            -C output .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: linux-kernel-x86_64
-          path: linux-kernel-x86_64.tar.gz
-
+          name: linux-5.15-x86_64
+          path: linux-5.15-x86_64.tar.gz
