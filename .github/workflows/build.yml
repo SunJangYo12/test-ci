@@ -47,17 +47,10 @@ jobs:
               -e BLK_DEV_INITRD \
               -e SYSVIPC \
               -e CC_OPTIMIZE_FOR_PERFORMANCE \
-              -d CC_OPTIMIZE_FOR_SIZE
-
-          ./scripts/config \
+              -d CC_OPTIMIZE_FOR_SIZE \
               -e KCOV \
               -d KCOV_INSTRUMENT_ALL \
-              -e KCOV_ENABLE_COMPARISONS
-
-          find net -name Makefile \
-              | xargs -L1 -I {} bash -c 'echo "KCOV_INSTRUMENT := y" >> {}'
-
-          ./scripts/config \
+              -e KCOV_ENABLE_COMPARISONS \
               -e DEBUG_FS -e DEBUG_INFO \
               -e KALLSYMS -e KALLSYMS_ALL \
               -e NAMESPACES -e UTS_NS -e IPC_NS -e PID_NS -e NET_NS -e USER_NS \
@@ -77,9 +70,7 @@ jobs:
               --set-val DEFAULT_HUNG_TASK_TIMEOUT 140 \
               --set-val RCU_CPU_STALL_TIMEOUT 100 \
               -e UBSAN \
-              -d RANDOMIZE_BASE
-
-          ./scripts/config \
+              -d RANDOMIZE_BASE \
               -e VIRTIO -e VIRTIO_PCI -e VIRTIO_MMIO \
               -e NET -e NET_CORE -e NETDEVICES -e NETWORK_FILESYSTEMS \
               -e INET -e NET_9P -e NET_9P_VIRTIO -e 9P_FS \
@@ -92,12 +83,13 @@ jobs:
               -d CMDLINE_OVERRIDE \
               -d UEVENT_HELPER \
               -d EMBEDDED -d EXPERT \
-              -d MODULE_SIG_FORCE
-
-          ./scripts/config -e PACKET \
+              -d MODULE_SIG_FORCE \
               -e INET_UDP_DIAG -e INET_RAW_DIAG -e INET_DIAG_DESTROY \
               -e NETLINK_DIAG -e UNIX_DIAG -e BPF_SYSCALL \
               -e VSOCKETS -e NLMON -e DUMMY -e TLS
+
+          find net -name Makefile \
+              | xargs -L1 -I {} bash -c 'echo "KCOV_INSTRUMENT := y" >> {}'
 
           make olddefconfig
 
