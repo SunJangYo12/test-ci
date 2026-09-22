@@ -52,33 +52,6 @@ jobs:
               -d KCOV_INSTRUMENT_ALL \
               -e KCOV_ENABLE_COMPARISONS
 
-          ./scripts/config \
-              -e DEBUG_FS -e DEBUG_INFO \
-              -e KALLSYMS -e KALLSYMS_ALL \
-              -e NAMESPACES -e UTS_NS -e IPC_NS -e PID_NS -e NET_NS -e USER_NS \
-              -e CGROUP_PIDS -e MEMCG -e CONFIGFS_FS -e SECURITYFS \
-              -e KASAN -e KASAN_INLINE -e WARNING \
-              -e FAULT_INJECTION -e FAULT_INJECTION_DEBUG_FS \
-              -e FAILSLAB -e FAIL_PAGE_ALLOC \
-              -e FAIL_MAKE_REQUEST -e FAIL_IO_TIMEOUT -e FAIL_FUTEX \
-              -e LOCKDEP -e PROVE_LOCKING \
-              -e DEBUG_ATOMIC_SLEEP \
-              -e PROVE_RCU -e DEBUG_VM \
-              -e REFCOUNT_FULL -e FORTIFY_SOURCE \
-              -e HARDENED_USERCOPY -e LOCKUP_DETECTOR \
-              -e SOFTLOCKUP_DETECTOR -e HARDLOCKUP_DETECTOR \
-              -e BOOTPARAM_HARDLOCKUP_PANIC \
-              -e DETECT_HUNG_TASK -e WQ_WATCHDOG \
-              --set-val DEFAULT_HUNG_TASK_TIMEOUT 140 \
-              --set-val RCU_CPU_STALL_TIMEOUT 100 \
-              -e UBSAN \
-              -d RANDOMIZE_BASE
-
-
-          ./scripts/config -e PACKET \
-              -e INET_UDP_DIAG -e INET_RAW_DIAG -e INET_DIAG_DESTROY \
-              -e NETLINK_DIAG -e UNIX_DIAG -e BPF_SYSCALL \
-              -e VSOCKETS -e NLMON -e DUMMY -e TLS
 
 
           make olddefconfig
