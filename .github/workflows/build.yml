@@ -29,10 +29,11 @@ jobs:
             git \
             rsync
 
-      - name: Clone Linux 5.15
+      - name: Clone Linux 4
         run: |
             wget https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.15.tar.gz
             tar -xf linux-4.15.tar.gz
+            rm *.gz
             mv linux-* linux
 
       - name: Configure kernel
