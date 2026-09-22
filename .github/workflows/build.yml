@@ -74,20 +74,6 @@ jobs:
               -e UBSAN \
               -d RANDOMIZE_BASE
 
-          ./scripts/config \
-              -e VIRTIO -e VIRTIO_PCI -e VIRTIO_MMIO \
-              -e NET -e NET_CORE -e NETDEVICES -e NETWORK_FILESYSTEMS \
-              -e INET -e NET_9P -e NET_9P_VIRTIO -e 9P_FS \
-              -e VIRTIO_NET -e VIRTIO_CONSOLE \
-              -e DEVTMPFS -e SCSI_VIRTIO -e BINFMT_SCRIPT -e TMPFS \
-              -e UNIX -e TTY -e VT -e UNIX98_PTYS -e WATCHDOG -e WATCHDOG_CORE \
-              -e I6300ESB_WDT \
-              -e BLOCK -e SCSI_gLOWLEVEL -e SCSI -e SCSI_VIRTIO \
-              -e BLK_DEV_SD -e VIRTIO_BALLOON \
-              -d CMDLINE_OVERRIDE \
-              -d UEVENT_HELPER \
-              -d EMBEDDED -d EXPERT \
-              -d MODULE_SIG_FORCE
 
           ./scripts/config -e PACKET \
               -e INET_UDP_DIAG -e INET_RAW_DIAG -e INET_DIAG_DESTROY \
