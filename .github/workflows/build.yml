@@ -1,4 +1,4 @@
-name: Build Linux 5.15 Kernel
+name: Build Linux netlink AFL++
 
 on:
   push:
@@ -31,68 +31,75 @@ jobs:
 
       - name: Clone Linux 5.15
         run: |
-          git clone \
-            --depth=1 \
-            --branch v5.15.190 \
-            https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git \
-            linux
+            wget https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.15.tar.gz
+            tar -xf linux-4.15.tar.gz
+            mv linux-* linux
 
       - name: Configure kernel
         run: |
           cd linux
+          ./scripts/config \
+              -e EARLY_PRINTK \
+              -e 64BIT \
+              -e BPF -d EMBEDDED -d EXPERT \
+              -e INOTIFY_USER \
+              -e ACPI \
+              -e BLK_DEV_INITRD \
+              -e SYSVIPC \
+              -e CC_OPTIMIZE_FOR_PERFORMANCE \
+              -d CC_OPTIMIZE_FOR_SIZE
 
-          make x86_64_defconfig
+          ./scripts/config \
+              -e KCOV \
+              -d KCOV_INSTRUMENT_ALL \
+              -e KCOV_ENABLE_COMPARISONS
 
-          scripts/config --enable CONFIG_NET
-          scripts/config --enable CONFIG_PACKET
-          scripts/config --enable CONFIG_INET
+          find net -name Makefile \
+              | xargs -L1 -I {} bash -c 'echo "KCOV_INSTRUMENT := y" >> {}'
 
-          scripts/config --enable CONFIG_VIRTIO
-          scripts/config --enable CONFIG_VIRTIO_PCI
-          scripts/config --enable CONFIG_VIRTIO_NET
+          ./scripts/config \
+              -e DEBUG_FS -e DEBUG_INFO \
+              -e KALLSYMS -e KALLSYMS_ALL \
+              -e NAMESPACES -e UTS_NS -e IPC_NS -e PID_NS -e NET_NS -e USER_NS \
+              -e CGROUP_PIDS -e MEMCG -e CONFIGFS_FS -e SECURITYFS \
+              -e KASAN -e KASAN_INLINE -e WARNING \
+              -e FAULT_INJECTION -e FAULT_INJECTION_DEBUG_FS \
+              -e FAILSLAB -e FAIL_PAGE_ALLOC \
+              -e FAIL_MAKE_REQUEST -e FAIL_IO_TIMEOUT -e FAIL_FUTEX \
+              -e LOCKDEP -e PROVE_LOCKING \
+              -e DEBUG_ATOMIC_SLEEP \
+              -e PROVE_RCU -e DEBUG_VM \
+              -e REFCOUNT_FULL -e FORTIFY_SOURCE \
+              -e HARDENED_USERCOPY -e LOCKUP_DETECTOR \
+              -e SOFTLOCKUP_DETECTOR -e HARDLOCKUP_DETECTOR \
+              -e BOOTPARAM_HARDLOCKUP_PANIC \
+              -e DETECT_HUNG_TASK -e WQ_WATCHDOG \
+              --set-val DEFAULT_HUNG_TASK_TIMEOUT 140 \
+              --set-val RCU_CPU_STALL_TIMEOUT 100 \
+              -e UBSAN \
+              -d RANDOMIZE_BASE
 
-          scripts/config --enable CONFIG_TTY
-          scripts/config --enable CONFIG_SERIAL_8250
-          scripts/config --enable CONFIG_SERIAL_8250_CONSOLE
+          ./scripts/config \
+              -e VIRTIO -e VIRTIO_PCI -e VIRTIO_MMIO \
+              -e NET -e NET_CORE -e NETDEVICES -e NETWORK_FILESYSTEMS \
+              -e INET -e NET_9P -e NET_9P_VIRTIO -e 9P_FS \
+              -e VIRTIO_NET -e VIRTIO_CONSOLE \
+              -e DEVTMPFS -e SCSI_VIRTIO -e BINFMT_SCRIPT -e TMPFS \
+              -e UNIX -e TTY -e VT -e UNIX98_PTYS -e WATCHDOG -e WATCHDOG_CORE \
+              -e I6300ESB_WDT \
+              -e BLOCK -e SCSI_gLOWLEVEL -e SCSI -e SCSI_VIRTIO \
+              -e BLK_DEV_SD -e VIRTIO_BALLOON \
+              -d CMDLINE_OVERRIDE \
+              -d UEVENT_HELPER \
+              -d EMBEDDED -d EXPERT \
+              -d MODULE_SIG_FORCE
 
-          # Kcov
-          scripts/config --enable CONFIG_KCOV
-
-          # Debug/GDB
-          scripts/config --enable CONFIG_DEBUG_KERNEL
-          scripts/config --enable CONFIG_DEBUG_INFO
-          scripts/config --enable CONFIG_FRAME_POINTER
-          scripts/config --enable CONFIG_KALLSYMS
-          scripts/config --enable CONFIG_KALLSYMS_ALL
-          scripts/config --enable CONFIG_GDB_SCRIPTS
-
-          # ftrace
-          scripts/config --enable CONFIG_FTRACE
-          scripts/config --enable CONFIG_FUNCTION_TRACER
-          scripts/config --enable CONFIG_FUNCTION_GRAPH_TRACER
-
-          # kprobes
-          scripts/config --enable CONFIG_KPROBES
-          scripts/config --enable CONFIG_KPROBE_EVENTS
-
-          # BPF
-          scripts/config --enable CONFIG_BPF
-          scripts/config --enable CONFIG_BPF_SYSCALL
-          scripts/config --enable CONFIG_BPF_EVENTS
-
-          # tracepoints / perf
-          scripts/config --enable CONFIG_PERF_EVENTS
-
+          ./scripts/config -e PACKET \
+              -e INET_UDP_DIAG -e INET_RAW_DIAG -e INET_DIAG_DESTROY \
+              -e NETLINK_DIAG -e UNIX_DIAG -e BPF_SYSCALL \
+              -e VSOCKETS -e NLMON -e DUMMY -e TLS
 
           make olddefconfig
-
-      - name: Show config
-        run: |
-          cd linux
-
-          grep -E \
-          '^CONFIG_(NET|PACKET|INET|VIRTIO|VIRTIO_PCI|VIRTIO_NET|KCOV|DEBUG_KERNEL|DEBUG_INFO|FRAME_POINTER|SERIAL_8250_CONSOLE)=' \
-          .config
 
       - name: Build kernel
         run: |
@@ -107,11 +114,11 @@ jobs:
           cp linux/vmlinux output/
           cp linux/.config output/kernel.config
 
-          tar czvf linux-5.15-x86_64.tar.gz \
+          tar czvf linux-4.tar.gz \
             -C output .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: linux-5.15-x86_64
-          path: linux-5.15-x86_64.tar.gz
+          name: linux-4
+          path: linux-4.tar.gz
