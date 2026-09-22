@@ -29,12 +29,11 @@ jobs:
             git \
             rsync
 
-      - name: Clone Linux 4
-        run: |
-            wget https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.15.tar.gz
-            tar -xf linux-4.15.tar.gz
-            rm *.gz
-            mv linux-* linux
+      - name: Download Linux 4.15
+              run: |
+                wget -q https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.15.tar.gz
+                mkdir linux
+                tar -xzf linux-4.15.tar.gz --strip-components=1 -C linux
 
       - name: Configure kernel
         run: |
@@ -88,7 +87,7 @@ jobs:
               -e DEVTMPFS -e SCSI_VIRTIO -e BINFMT_SCRIPT -e TMPFS \
               -e UNIX -e TTY -e VT -e UNIX98_PTYS -e WATCHDOG -e WATCHDOG_CORE \
               -e I6300ESB_WDT \
-              -e BLOCK -e SCSI_LOWLEVEL -e SCSI -e SCSI_VIRTIO \
+              -e BLOCK -e SCSI_gLOWLEVEL -e SCSI -e SCSI_VIRTIO \
               -e BLK_DEV_SD -e VIRTIO_BALLOON \
               -d CMDLINE_OVERRIDE \
               -d UEVENT_HELPER \
