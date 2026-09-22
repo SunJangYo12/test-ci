@@ -88,7 +88,7 @@ jobs:
               -e DEVTMPFS -e SCSI_VIRTIO -e BINFMT_SCRIPT -e TMPFS \
               -e UNIX -e TTY -e VT -e UNIX98_PTYS -e WATCHDOG -e WATCHDOG_CORE \
               -e I6300ESB_WDT \
-              -e BLOCK -e SCSI_gLOWLEVEL -e SCSI -e SCSI_VIRTIO \
+              -e BLOCK -e SCSI_LOWLEVEL -e SCSI -e SCSI_VIRTIO \
               -e BLK_DEV_SD -e VIRTIO_BALLOON \
               -d CMDLINE_OVERRIDE \
               -d UEVENT_HELPER \
