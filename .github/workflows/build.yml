@@ -30,10 +30,10 @@ jobs:
             rsync
 
       - name: Download Linux 4.15
-              run: |
-                wget -q https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.15.tar.gz
-                mkdir linux
-                tar -xzf linux-4.15.tar.gz --strip-components=1 -C linux
+        run: |
+          wget -q https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.15.tar.gz
+          mkdir linux
+          tar -xzf linux-4.15.tar.gz --strip-components=1 -C linux
 
       - name: Configure kernel
         run: |
