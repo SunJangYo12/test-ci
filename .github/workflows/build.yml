@@ -1,4 +1,4 @@
-name: Build Linux netlink AFL++
+name: Build Linux OEM 6.0 KCOV
 
 on:
   push:
@@ -27,99 +27,91 @@ jobs:
             cpio \
             kmod \
             git \
-            rsync
+            rsync \
+            dpkg-dev \
+            wget \
+            xz-utils
 
-      - name: Download Linux 4.15
+      - name: Download Linux OEM 6.0 source
         run: |
-          wget -q https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.19.325.tar.xz
-          tar -xf linux-4.19.325.tar.xz
-          mv linux-4.19.325 linux
+          wget https://security.ubuntu.com/ubuntu/ubuntu/pool/main/l/linux-oem-6.0/linux-oem-6.0_6.0.0.orig.tar.gz
+          wget https://security.ubuntu.com/ubuntu/ubuntu/pool/main/l/linux-oem-6.0/linux-oem-6.0_6.0.0-1021.21.diff.gz
+          wget https://security.ubuntu.com/ubuntu/ubuntu/pool/main/l/linux-oem-6.0/linux-oem-6.0_6.0.0-1021.21.dsc
+
+      - name: Extract source
+        run: |
+          dpkg-source -x linux-oem-6.0_6.0.0-1021.21.dsc
 
       - name: Configure kernel
         run: |
-          cd linux
-          ./scripts/config \
-              -e EARLY_PRINTK \
-              -e SERIAL_8250 \
-              -e SERIAL_8250_CONSOLE \
-              -e 64BIT \
-              -e BPF -d EMBEDDED -d EXPERT \
-              -e INOTIFY_USER \
-              -e ACPI \
-              -e BLK_DEV_INITRD \
-              -e SYSVIPC \
-              -e CC_OPTIMIZE_FOR_PERFORMANCE \
-              -d CC_OPTIMIZE_FOR_SIZE \
-              -e KCOV \
-              -d KCOV_INSTRUMENT_ALL \
-              -e KCOV_ENABLE_COMPARISONS
+          set -e
+          set -o pipefail
+          {
+            cd linux-oem-6.0-6.0.0
 
-          ./scripts/config \
-              -e DEBUG_FS -e DEBUG_INFO \
-              -e KALLSYMS -e KALLSYMS_ALL \
-              -e NAMESPACES -e UTS_NS -e IPC_NS -e PID_NS -e NET_NS -e USER_NS \
-              -e CGROUP_PIDS -e MEMCG -e CONFIGFS_FS -e SECURITYFS \
-              -e KASAN -e KASAN_INLINE -e WARNING \
-              -e FAULT_INJECTION -e FAULT_INJECTION_DEBUG_FS \
-              -e FAILSLAB -e FAIL_PAGE_ALLOC \
-              -e FAIL_MAKE_REQUEST -e FAIL_IO_TIMEOUT -e FAIL_FUTEX \
-              -e LOCKDEP -e PROVE_LOCKING \
-              -e DEBUG_ATOMIC_SLEEP \
-              -e PROVE_RCU -e DEBUG_VM \
-              -e REFCOUNT_FULL -e FORTIFY_SOURCE \
-              -e HARDENED_USERCOPY -e LOCKUP_DETECTOR \
-              -e SOFTLOCKUP_DETECTOR -e HARDLOCKUP_DETECTOR \
-              -e BOOTPARAM_HARDLOCKUP_PANIC \
-              -e DETECT_HUNG_TASK -e WQ_WATCHDOG \
-              --set-val DEFAULT_HUNG_TASK_TIMEOUT 140 \
-              --set-val RCU_CPU_STALL_TIMEOUT 100 \
-              -e UBSAN \
-              -d RANDOMIZE_BASE
+            cp ../linux-config/.config .config
 
-          ./scripts/config \
-              -e VIRTIO -e VIRTIO_PCI -e VIRTIO_MMIO \
-              -e NET -e NET_CORE -e NETDEVICES -e NETWORK_FILESYSTEMS \
-              -e INET -e NET_9P -e NET_9P_VIRTIO -e 9P_FS \
-              -e VIRTIO_NET -e VIRTIO_CONSOLE \
-              -e DEVTMPFS -e SCSI_VIRTIO -e BINFMT_SCRIPT -e TMPFS \
-              -e UNIX -e TTY -e VT -e UNIX98_PTYS -e WATCHDOG -e WATCHDOG_CORE \
-              -e I6300ESB_WDT \
-              -e BLOCK -e SCSI_LOWLEVEL -e SCSI -e SCSI_VIRTIO \
-              -e BLK_DEV_SD -e VIRTIO_BALLOON \
-              -d CMDLINE_OVERRIDE \
-              -d UEVENT_HELPER \
-              -d EMBEDDED -d EXPERT \
-              -d MODULE_SIG_FORCE
+            echo "=== Original config ==="
+            grep -E 'CONFIG_(KCOV|KCOV_ENABLE_COMPARISONS|KCOV_INSTRUMENT_ALL|FUNCTION_TRACER|FUNCTION_GRAPH_TRACER|DYNAMIC_FTRACE|BPF|BPF_SYSCALL|BPF_JIT|DEBUG_INFO|FRAME_POINTER|LOCALVERSION)=' .config
 
-          ./scripts/config -e PACKET \
-              -e INET_UDP_DIAG -e INET_RAW_DIAG -e INET_DIAG_DESTROY \
-              -e NETLINK_DIAG -e UNIX_DIAG -e BPF_SYSCALL \
-              -e VSOCKETS -e NLMON -e DUMMY -e TLS
+            scripts/config --enable CONFIG_KCOV
+            scripts/config --enable CONFIG_KCOV_ENABLE_COMPARISONS
+            scripts/config --set-str CONFIG_LOCALVERSION "-kcov"
 
+            make olddefconfig
 
-          find net -name Makefile \
-              | xargs -L1 -I {} bash -c 'echo "KCOV_INSTRUMENT := y" >> {}'
+            echo "=== Final config ==="
+            grep -E 'CONFIG_(KCOV|KCOV_ENABLE_COMPARISONS|KCOV_INSTRUMENT_ALL|FUNCTION_TRACER|FUNCTION_GRAPH_TRACER|DYNAMIC_FTRACE|BPF|BPF_SYSCALL|BPF_JIT|DEBUG_INFO|FRAME_POINTER|LOCALVERSION)=' .config
+          } 2>&1 | tee ../mylog.txt
 
-          make olddefconfig
-
-      - name: Build kernel
+      - name: Prepare and build kernel packages
         run: |
-          cd linux
-          make -j$(nproc)
+          set -o pipefail
 
-      - name: Package
+          cd linux-oem-6.0-6.0.0
+
+          {
+            echo "========================================"
+            echo " Linux OEM 6.0 KCOV BUILD"
+            echo "========================================"
+
+            echo
+            echo "=== Prepare ==="
+            make prepare
+
+            echo
+            echo "=== Kernel release ==="
+            make -s kernelrelease
+
+            echo
+            echo "=== Build Debian packages ==="
+            make -j$(nproc) bindeb-pkg
+
+          } 2>&1 | tee -a ../mylog.txt
+
+      - name: Show generated packages
+        run: |
+          echo "=== Generated .deb packages ==="
+          ls -lh ./*.deb 2>/dev/null || true
+          ls -lh linux-oem-6.0-6.0.0/*.deb 2>/dev/null || true
+
+      - name: Collect artifacts
         run: |
           mkdir -p output
 
-          cp linux/arch/x86/boot/bzImage output/
-          cp linux/vmlinux output/
-          cp linux/.config output/kernel.config
+          cp mylog.txt output/
 
-          tar czvf linux-4.tar.gz \
+          cp ./*.deb output/ 2>/dev/null || true
+          cp linux-oem-6.0-6.0.0/*.deb output/ 2>/dev/null || true
+
+          echo "=== Artifact contents ==="
+          ls -lh output
+
+          tar czvf linux-oem-6-kcov.tar.gz \
             -C output .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: linux-4
-          path: linux-4.tar.gz
+          name: linux-oem-6-kcov
+          path: linux-oem-6-kcov.tar.gz
