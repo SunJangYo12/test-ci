@@ -44,13 +44,10 @@ jobs:
 
       - name: Configure kernel
         run: |
-          set -e
           set -o pipefail
+          cd linux-oem-6.0-6.0.0
+          cp ../linux-config/.config .config
           {
-            cd linux-oem-6.0-6.0.0
-
-            cp ../linux-config/.config .config
-
             echo "=== Original config ==="
             grep -E 'CONFIG_(KCOV|KCOV_ENABLE_COMPARISONS|KCOV_INSTRUMENT_ALL|FUNCTION_TRACER|FUNCTION_GRAPH_TRACER|DYNAMIC_FTRACE|BPF|BPF_SYSCALL|BPF_JIT|DEBUG_INFO|FRAME_POINTER|LOCALVERSION)=' .config
 
