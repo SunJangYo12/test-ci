@@ -1,4 +1,4 @@
-name: Build Linux OEM 6.0 KCOV
+name: Buildroot ramdisk filesystem
 
 on:
   push:
@@ -32,65 +32,29 @@ jobs:
             wget \
             xz-utils
 
-      - name: Download Linux OEM 6.0 source
+      - name: Clone buildroot
         run: |
-          wget https://security.ubuntu.com/ubuntu/ubuntu/pool/main/l/linux-oem-6.0/linux-oem-6.0_6.0.0.orig.tar.gz
-          wget https://security.ubuntu.com/ubuntu/ubuntu/pool/main/l/linux-oem-6.0/linux-oem-6.0_6.0.0-1021.21.diff.gz
-          wget https://security.ubuntu.com/ubuntu/ubuntu/pool/main/l/linux-oem-6.0/linux-oem-6.0_6.0.0-1021.21.dsc
+          git clone https://github.com/buildroot/buildroot
 
-      - name: Extract source
-        run: |
-          dpkg-source -x linux-oem-6.0_6.0.0-1021.21.dsc
-
-      - name: Configure kernel
+      - name: Configure buildroot
         run: |
           set -o pipefail
-          cd linux-oem-6.0-6.0.0
-          cp ../linux-config/.config .config
+          cd buildroot
+          cp ../buildroot-config/.config .config
           {
-            echo "=== Original config ==="
-            grep -E 'CONFIG_(KCOV|KCOV_ENABLE_COMPARISONS|KCOV_INSTRUMENT_ALL|FUNCTION_TRACER|FUNCTION_GRAPH_TRACER|DYNAMIC_FTRACE|BPF|BPF_SYSCALL|BPF_JIT|DEBUG_INFO|FRAME_POINTER|LOCALVERSION)=' .config
-
-            scripts/config --enable CONFIG_KCOV
-            scripts/config --enable CONFIG_KCOV_ENABLE_COMPARISONS
-            scripts/config --set-str CONFIG_LOCALVERSION "-kcov"
-
-            make olddefconfig
-
-            echo "=== Final config ==="
-            grep -E 'CONFIG_(KCOV|KCOV_ENABLE_COMPARISONS|KCOV_INSTRUMENT_ALL|FUNCTION_TRACER|FUNCTION_GRAPH_TRACER|DYNAMIC_FTRACE|BPF|BPF_SYSCALL|BPF_JIT|DEBUG_INFO|FRAME_POINTER|LOCALVERSION)=' .config
-          } 2>&1 | tee ../mylog.txt
-
-      - name: Prepare and build kernel packages
-        run: |
-          set -o pipefail
-
-          cd linux-oem-6.0-6.0.0
-
-          {
-            echo "========================================"
-            echo " Linux OEM 6.0 KCOV BUILD"
-            echo "========================================"
-
-            echo
-            echo "=== Prepare ==="
-            make prepare
-
-            echo
-            echo "=== Kernel release ==="
-            make -s kernelrelease
-
-            echo
-            echo "=== Build Debian packages ==="
-            make -j$(nproc) bindeb-pkg
-
+            echo "hello"
           } 2>&1 | tee -a ../mylog.txt
 
-      - name: Show generated packages
+      - name: Make
         run: |
-          echo "=== Generated .deb packages ==="
-          ls -lh ./*.deb 2>/dev/null || true
-          ls -lh linux-oem-6.0-6.0.0/*.deb 2>/dev/null || true
+          set -o pipefail
+
+          cd buildroot
+
+          {
+            make -j$(nproc)
+
+          } 2>&1 | tee -a ../mylog.txt
 
       - name: Collect artifacts
         run: |
@@ -98,17 +62,16 @@ jobs:
 
           cp mylog.txt output/
 
-          cp ./*.deb output/ 2>/dev/null || true
-          cp linux-oem-6.0-6.0.0/*.deb output/ 2>/dev/null || true
+          cp ./buildroot/output/images/rootfs.cpio.gz 2>/dev/null || true
 
           echo "=== Artifact contents ==="
           ls -lh output
 
-          tar czvf linux-oem-6-kcov.tar.gz \
+          tar czvf buildroot-qemu.tar.gz \
             -C output .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: linux-oem-6-kcov
-          path: linux-oem-6-kcov.tar.gz
+          name: buildroot-qemu
+          path: buildroot-qemu.tar.gz
