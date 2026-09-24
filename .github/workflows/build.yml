@@ -40,9 +40,9 @@ jobs:
         run: |
           set -o pipefail
           cd buildroot
-          cp ../buildroot-config/.config .config
           {
-            echo "hello"
+            ./support/kconfig/merge_config.sh .config ../buildroot-config/ci.config
+
           } 2>&1 | tee -a ../mylog.txt
 
       - name: Make
@@ -52,6 +52,7 @@ jobs:
           cd buildroot
 
           {
+            make olddefconfig
             make -j$(nproc)
 
           } 2>&1 | tee -a ../mylog.txt
