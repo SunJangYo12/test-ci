@@ -1,4 +1,4 @@
-name: Buildroot ramdisk filesystem
+name: syzkaller build
 
 on:
   push:
@@ -32,28 +32,27 @@ jobs:
             wget \
             xz-utils
 
-      - name: Clone buildroot
+      - name: Clone
         run: |
-          git clone https://github.com/buildroot/buildroot
+          git clone --depth 1 https://github.com/google/syzkaller.git
 
-      - name: Configure buildroot
+      - name: Configure go
         run: |
           set -o pipefail
-          cd buildroot
           {
-            make qemu_x86_64_defconfig
-            ./support/kconfig/merge_config.sh .config ../buildroot-config/ci.config
+            wget https://dl.google.com/go/go1.23.6.linux-amd64.tar.gz
+            tar -xf go1.23.6.linux-amd64.tar.gz
 
           } 2>&1 | tee -a ../mylog.txt
 
       - name: Make
         run: |
           set -o pipefail
+          export GOROOT=`pwd`/go
+          export PATH=$GOROOT/bin:$PATH
 
-          cd buildroot
-
+          cd syzkaller
           {
-            make olddefconfig
             make -j$(nproc)
 
           } 2>&1 | tee -a ../mylog.txt
@@ -64,16 +63,17 @@ jobs:
 
           cp mylog.txt output/
 
-          cp ./buildroot/output/images/rootfs.cpio.gz output 2>/dev/null || true
+          cp -R ./syzkaller/bin output 2>/dev/null || true
+          cp -R ./syzkaller/sys output 2>/dev/null || true
 
           echo "=== Artifact contents ==="
           ls -lh output
 
-          tar czvf buildroot-qemu.tar.gz \
+          tar czvf result.tar.gz \
             -C output .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: buildroot-qemu
-          path: buildroot-qemu.tar.gz
+          name: result
+          path: result.tar.gz
