@@ -64,7 +64,7 @@ jobs:
 
           cp mylog.txt output/
 
-          cp ./buildroot/output/images/rootfs.cpio.gz 2>/dev/null || true
+          cp ./buildroot/output/images/rootfs.cpio.gz output 2>/dev/null || true
 
           echo "=== Artifact contents ==="
           ls -lh output
