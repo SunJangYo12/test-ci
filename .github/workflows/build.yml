@@ -40,8 +40,8 @@ jobs:
         run: |
           set -o pipefail
           {
-            wget https://dl.google.com/go/go1.23.6.linux-amd64.tar.gz
-            tar -xf go1.23.6.linux-amd64.tar.gz
+            wget https://go.dev/dl/go1.27.1.linux-arm64.tar.gz
+            tar -xf go1.27.1.linux-arm64.tar.gz
 
           } 2>&1 | tee -a ../mylog.txt
 
@@ -53,7 +53,7 @@ jobs:
 
           cd syzkaller
           {
-            make -j$(nproc)
+            make TARGETOS=linux TARGETARCH=arm64 -j$(nproc)
 
           } 2>&1 | tee -a ../mylog.txt
 
