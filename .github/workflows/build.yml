@@ -30,9 +30,7 @@ jobs:
             rsync \
             dpkg-dev \
             wget \
-            xz-utils \
-            gcc-aarch64-linux-gnu \
-            g++-aarch64-linux-gnu
+            xz-utils
 
       - name: Clone
         run: |
@@ -55,6 +53,7 @@ jobs:
 
           cd syzkaller
           {
+            make install_prerequisites
             make TARGETOS=linux TARGETARCH=arm64
 
           } 2>&1 | tee -a ../mylog.txt
