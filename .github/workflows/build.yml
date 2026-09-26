@@ -30,7 +30,9 @@ jobs:
             rsync \
             dpkg-dev \
             wget \
-            xz-utils
+            xz-utils \
+            gcc-aarch64-linux-gnu \
+            g++-aarch64-linux-gnu
 
       - name: Clone
         run: |
