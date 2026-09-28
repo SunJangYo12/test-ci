@@ -63,6 +63,7 @@ jobs:
           mkdir -p output
 
           cp mylog.txt output/
+          cp ./buildroot/.config output
 
           cp ./buildroot/output/images/rootfs.cpio.gz output 2>/dev/null || true
 
