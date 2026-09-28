@@ -2,9 +2,9 @@ name: Buildroot ramdisk filesystem
 
 on:
   push:
-    branches: [master]
+    branches: [compile-buildroot]
   pull_request:
-    branches: [master]
+    branches: [compile-buildroot]
 
 jobs:
   build:
@@ -41,8 +41,7 @@ jobs:
           set -o pipefail
           cd buildroot
           {
-            make qemu_x86_64_defconfig
-            ./support/kconfig/merge_config.sh .config ../buildroot-config/ci.config
+            cp ../buildroot-config/dmesg.config .config
 
           } 2>&1 | tee -a ../mylog.txt
 
