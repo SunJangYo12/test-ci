@@ -41,7 +41,8 @@ jobs:
           set -o pipefail
           cd buildroot
           {
-            cp ../buildroot-config/dmesg.config .config
+            make qemu_x86_64_defconfig
+            ./support/kconfig/merge_config.sh .config ../buildroot-config/dmesg.config
 
           } 2>&1 | tee -a ../mylog.txt
 
@@ -52,6 +53,7 @@ jobs:
           cd buildroot
 
           {
+            make olddefconfig
             make -j$(nproc)
 
           } 2>&1 | tee -a ../mylog.txt
