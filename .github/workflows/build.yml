@@ -59,17 +59,21 @@ jobs:
 
           } 2>&1 | tee -a ../mylog.txt
 
+
+
+
       - name: Collect artifacts
         run: |
           mkdir -p output
 
           cp mylog.txt output/
 
-          cp -R ./syzkaller/bin output 2>/dev/null || true
-          cp -R ./syzkaller/sys output 2>/dev/null || true
+          cp linux/arch/x86/boot/bzImage output || true
+          cp linux/vmlinux output || true
+          cp linux/System.map output || true
+          cp linux/.config output || true
+          cp linux/.config.syzbot output || true
 
-          echo "=== Artifact contents ==="
-          ls -lh output
 
           tar czvf result.tar.gz \
             -C output .
