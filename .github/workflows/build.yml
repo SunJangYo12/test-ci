@@ -2,7 +2,7 @@ name: Compile kernel2029
 
 on:
   push:
-    branches: [master]
+    branches: [compile-kernel2019]
   pull_request:
     branches: [master]
 
