@@ -37,13 +37,14 @@ jobs:
           scripts/config --set-str MODULE_SIG_KEY ""
           scripts/config --disable DEBUG_INFO_BTF
 
-          make olddefconfig
+          make CC="gcc-9 -fcf-protection=none" HOSTCC=gcc-9 olddefconfig
 
 
       - name: Making kernel
         run: |
           cd linux
-          make -j"$(nproc)" 2>&1 | tee ../mylog.txt || true
+          make CC="gcc-9 -fcf-protection=none" HOSTCC=gcc-9 -j$(nproc) 2>&1 | tee -a ../mylog.txt || true
+
 
 
       - name: Collect artifacts
