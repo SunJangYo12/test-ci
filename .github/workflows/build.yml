@@ -1,4 +1,4 @@
-name: syzkaller build
+name: Compile kernel2029
 
 on:
   push:
@@ -34,7 +34,9 @@ jobs:
 
       - name: Clone
         run: |
-          git clone --depth 1 https://github.com/google/syzkaller.git
+          wget -q https://github.com/torvalds/linux/archive/459e3a21535ae3c7a9a123650e54f5c882b8fcbf.tar.gz -O linux.tar.gz
+          mkdir linux
+          tar xzf linux.tar.gz -C linux --strip-components=1
 
       - name: Configure go
         run: |
