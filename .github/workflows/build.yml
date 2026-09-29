@@ -50,6 +50,15 @@ jobs:
 
           } 2>&1 | tee -a ../mylog.txt
 
+      - name: Making kernel
+        run: |
+          set -o pipefail
+          cd linux
+          {
+            make -j$(nproc)
+
+          } 2>&1 | tee -a ../mylog.txt
+
       - name: Collect artifacts
         run: |
           mkdir -p output
