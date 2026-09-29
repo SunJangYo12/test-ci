@@ -37,26 +37,16 @@ jobs:
           wget -q https://github.com/torvalds/linux/archive/459e3a21535ae3c7a9a123650e54f5c882b8fcbf.tar.gz -O linux.tar.gz
           mkdir linux
           tar xzf linux.tar.gz -C linux --strip-components=1
+          cd linux
+          wget -O .config 'https://syzkaller.appspot.com/text?tag=KernelConfig&x=ef1b87b455c397cf'
+          cp .config .config.syzbot
 
-      - name: Configure go
+      - name: Configure kernel
         run: |
           set -o pipefail
+          cd linux
           {
-            wget https://dl.google.com/go/go1.23.6.linux-amd64.tar.gz
-            tar -xf go1.23.6.linux-amd64.tar.gz
-
-          } 2>&1 | tee -a ../mylog.txt
-
-      - name: Make
-        run: |
-          set -o pipefail
-          export GOROOT=`pwd`/go
-          export PATH=$GOROOT/bin:$PATH
-
-          cd syzkaller
-          {
-            make install_prerequisites
-            make TARGETOS=linux TARGETARCH=arm64
+            make olddefconfig
 
           } 2>&1 | tee -a ../mylog.txt
 
