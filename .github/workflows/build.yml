@@ -32,29 +32,18 @@ jobs:
 
       - name: Configure kernel
         run: |
-        #  set -o pipefail
           cd linux
-        #  {
-        #    uname -ar
-          # hindari error sertifikat/signing
           scripts/config --set-str SYSTEM_TRUSTED_KEYS ""
           scripts/config --set-str MODULE_SIG_KEY ""
           scripts/config --disable DEBUG_INFO_BTF
 
           make olddefconfig
 
-       #   } 2>&1 | tee -a ../mylog.txt
 
       - name: Making kernel
         run: |
-         # set -o pipefail
           cd linux
-         # {
           make -j$(nproc) || true
-
-         # } 2>&1 | tee -a ../mylog.txt
-
-
 
 
       - name: Collect artifacts
