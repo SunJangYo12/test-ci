@@ -4,7 +4,7 @@ on:
   push:
     branches: [compile-kernel2019]
   pull_request:
-    branches: [master]
+    branches: [compile-kernel2019]
 
 jobs:
   build:
