@@ -43,14 +43,14 @@ jobs:
       - name: Making kernel
         run: |
           cd linux
-          make -j$(nproc) || true
+          make -j"$(nproc)" 2>&1 | tee ../mylog.txt || true
 
 
       - name: Collect artifacts
         run: |
           mkdir -p output
 
-          cp mylog.txt output/
+          cp mylog.txt output/ || true
 
           cp linux/arch/x86/boot/bzImage output || true
           cp linux/vmlinux output || true
