@@ -43,7 +43,7 @@ jobs:
             wget https://dl.google.com/go/go1.7.6.linux-amd64.tar.gz
             tar xzf go1.7.6.linux-amd64.tar.gz
 
-          } 2>&1 | tee -a ../mylog.txt
+          } 2>&1 | tee -a ~/mylog.txt
 
       - name: Make
         run: |
@@ -71,13 +71,17 @@ jobs:
                 -Wall -Wframe-larger-than=8192 \
                 -static-libgcc 2>&1 | head -30 || true
 
-          } 2>&1 | tee -a ../mylog.txt
+          } 2>&1 | tee -a ~/mylog.txt
 
       - name: Collect artifacts
         run: |
           mkdir -p output
 
           cp mylog.txt output/
+
+          cp -R syzkaller-lab/src/github.com/google/syzkaller/syz-fuzzer output 2>/dev/null || true
+          cp -R syzkaller-lab/src/github.com/google/syzkaller/syz-manager output 2>/dev/null || true
+          cp -R syzkaller-lab/src/github.com/google/syzkaller/syz-executor output 2>/dev/null || true
 
           tar czvf result.tar.gz \
             -C output .
