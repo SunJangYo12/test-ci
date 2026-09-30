@@ -79,9 +79,9 @@ jobs:
 
           cp mylog.txt output/
 
-          cp -R syzkaller-lab/src/github.com/google/syzkaller/syz-fuzzer output || true
-          cp -R syzkaller-lab/src/github.com/google/syzkaller/syz-manager output || true
-          cp -R syzkaller-lab/src/github.com/google/syzkaller/syz-executor output || true
+          #cp -R syzkaller-lab/src/github.com/google/syzkaller/syz-fuzzer output || true
+          #cp -R syzkaller-lab/src/github.com/google/syzkaller/syz-manager output || true
+          #cp -R syzkaller-lab/src/github.com/google/syzkaller/syz-executor output || true
 
           tar czvf result.tar.gz \
             -C output .
