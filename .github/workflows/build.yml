@@ -71,13 +71,17 @@ jobs:
                 -Wall -Wframe-larger-than=8192 \
                 -static-libgcc 2>&1 | head -30 || true
 
+            pwd
+            echo "zzzzzzzz"
+            ls ~
+
           } 2>&1 | tee -a ~/mylog.txt
 
       - name: Collect artifacts
         run: |
           mkdir -p output
 
-          cp mylog.txt output/
+          cp ~/mylog.txt output/
 
           cp -R syzkaller-lab/src/github.com/google/syzkaller/syz-fuzzer output 2>/dev/null || true
           cp -R syzkaller-lab/src/github.com/google/syzkaller/syz-manager output 2>/dev/null || true
