@@ -52,8 +52,8 @@ jobs:
           #export PATH=$GOROOT/bin:$PATH
           #cd syzkaller
           {
-            export GOROOT=go
-            export GOPATH=syzkaller-lab
+            export GOROOT=`pwd`/go
+            export GOPATH=`pwd`/syzkaller-lab
             export PATH=$GOROOT/bin:$PATH
 
             mkdir -p syzkaller-lab/src/github.com/google
@@ -70,10 +70,6 @@ jobs:
                 -DGOOS_linux=1 -DGOARCH_amd64=1 \
                 -Wall -Wframe-larger-than=8192 \
                 -static-libgcc 2>&1 | head -30 || true
-
-            pwd
-            echo "zzzzzzzz"
-            ls ~
 
           } 2>&1 | tee -a ~/mylog.txt
 
