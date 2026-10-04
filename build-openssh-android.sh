@@ -64,6 +64,10 @@ ac_cv_func_getentropy=yes \
   --with-ldflags="-static -L$PREFIX/lib" \
   --with-cppflags="-I$PREFIX/include"
 
+# Patch config.h
+sed -i 's|/\* #undef HAVE_ATTRIBUTE__SENTINEL__ \*/|#define HAVE_ATTRIBUTE__SENTINEL__ 1|' config.h
+sed -i 's|^#define HAVE_CLOSE_RANGE 1|/* #undef HAVE_CLOSE_RANGE */|' config.h
+
 make -j$(nproc) ssh scp
 $STRIP ssh scp
 
