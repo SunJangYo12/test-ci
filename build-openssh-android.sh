@@ -12,8 +12,8 @@ set -euo pipefail
 WORK="${PWD}/build-openssh"
 OUT="${PWD}/out"
 
-NDK_VERSION="r27c"
-API=26
+NDK_VERSION="r25c"
+API=24
 
 OPENSSL_VERSION="3.5.4"
 OPENSSH_VERSION="10.2p1"
@@ -36,6 +36,8 @@ if [ ! -d "$NDK_DIR" ]; then
         -O "${WORK}/ndk.zip"
 
     unzip -q "${WORK}/ndk.zip" -d "$WORK"
+	ls $NDK_DIR
+	ls $TOOLCHAIN
 fi
 
 CC="${TOOLCHAIN}/bin/aarch64-linux-android${API}-clang"
