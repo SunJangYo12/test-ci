@@ -13,10 +13,10 @@ WORK="${PWD}/build-openssh"
 OUT="${PWD}/out"
 
 NDK_VERSION="r25c"
-API=27
+API=24
 
 OPENSSL_VERSION="3.5.4"
-OPENSSH_VERSION="9.9p2"
+OPENSSH_VERSION="10.2p1"
 
 NDK_DIR="${WORK}/android-ndk-${NDK_VERSION}"
 TOOLCHAIN="${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64"
@@ -114,6 +114,15 @@ export CFLAGS="-O2 -ffunction-sections -fdata-sections"
 export CPPFLAGS="-I${OPENSSL_PREFIX}/include"
 export LDFLAGS="-static -L${OPENSSL_PREFIX}/lib -Wl,--gc-sections"
 
+ac_cv_func_endgrent=yes \
+ac_cv_func_fmt_scaled=no \
+ac_cv_func_getlastlogxbyname=no \
+ac_cv_func_readpassphrase=no \
+ac_cv_func_strnvis=no \
+ac_cv_header_sys_un_h=yes \
+ac_cv_search_getrrsetbyname=no \
+ac_cv_func_bzero=yes \
+ac_cv_func_close_range=no \
 ./configure \
     --host="aarch64-linux-android" \
     --prefix="$OPENSSH_PREFIX" \
@@ -127,10 +136,14 @@ export LDFLAGS="-static -L${OPENSSL_PREFIX}/lib -Wl,--gc-sections"
     --disable-strip \
     --disable-lastlog \
     --disable-utmp \
+	--disable-utmpx \
     --disable-wtmp \
     --disable-wtmpx \
     --disable-pututline \
-    --disable-pututxline
+    --disable-pututxline \
+	--disable-etc-default-login \
+	--disable-libutil \
+	--with-cflags=-Dfd_mask=int
 
 make -j"$(nproc)"
 
