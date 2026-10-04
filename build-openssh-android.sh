@@ -36,8 +36,7 @@ if [ ! -d "$NDK_DIR" ]; then
         -O "${WORK}/ndk.zip"
 
     unzip -q "${WORK}/ndk.zip" -d "$WORK"
-	ls $NDK_DIR
-	ls $TOOLCHAIN
+	ls $TOOLCHAIN/bin
 fi
 
 CC="${TOOLCHAIN}/bin/aarch64-linux-android${API}-clang"
