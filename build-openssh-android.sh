@@ -52,9 +52,8 @@ cd $WORK/openssh-$SSH_VER
 ac_cv_func_bzero=yes \
 ac_cv_func_recallocarray=no \
 ac_cv_have_decl_recallocarray=no \
-ac_cv_func_freezero=no \
-ac_cv_have_decl_freezero=no \
-ac_cv_func_getentropy=yes \
+ac_cv_func_close_range=no \
+ac_cv_have_decl_close_range=no \
 ./configure \
   --host=$TARGET \
   --prefix=/data/local/tmp/ssh \
