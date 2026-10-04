@@ -48,6 +48,12 @@ make -j$(nproc) && make install_sw
 
 # ---------- OpenSSH ----------
 cd $WORK/openssh-$SSH_VER
+
+ac_cv_func_recallocarray=no \
+ac_cv_have_decl_recallocarray=no \
+ac_cv_func_freezero=no \
+ac_cv_have_decl_freezero=no \
+ac_cv_func_getentropy=yes \
 ./configure \
   --host=$TARGET \
   --prefix=/data/local/tmp/ssh \
