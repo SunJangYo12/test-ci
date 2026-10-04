@@ -13,7 +13,7 @@ WORK="${PWD}/build-openssh"
 OUT="${PWD}/out"
 
 NDK_VERSION="r25c"
-API=24
+API=27
 
 OPENSSL_VERSION="3.5.4"
 OPENSSH_VERSION="9.9p2"
