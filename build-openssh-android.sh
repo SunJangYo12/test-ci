@@ -25,7 +25,7 @@ tar xf openssh-$SSH_VER.tar.gz
 export NDK=$WORK/android-ndk-$NDK_VER
 export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/linux-x86_64
 export TARGET=aarch64-linux-android
-export API=24
+export API=26
 export PATH=$TOOLCHAIN/bin:$PATH
 export ANDROID_NDK_ROOT=$NDK
 export CC=$TARGET$API-clang
