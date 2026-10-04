@@ -50,10 +50,15 @@ make -j$(nproc) && make install_sw
 cd $WORK/openssh-$SSH_VER
 
 ac_cv_func_bzero=yes \
+ac_cv_func_reallocarray=no \
+ac_cv_have_decl_reallocarray=no \
 ac_cv_func_recallocarray=no \
 ac_cv_have_decl_recallocarray=no \
 ac_cv_func_close_range=no \
 ac_cv_have_decl_close_range=no \
+ac_cv_func_getentropy=no \
+ac_cv_have_decl_getentropy=no \
+ac_cv_func_freezero=no \
 ./configure \
   --host=$TARGET \
   --prefix=/data/local/tmp/ssh \
