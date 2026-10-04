@@ -115,37 +115,35 @@ export CPPFLAGS="-I${OPENSSL_PREFIX}/include  -DHAVE_ATTRIBUTE__SENTINEL__=1 -DB
 export LDFLAGS="-static -L${OPENSSL_PREFIX}/lib -Wl,--gc-sections"
 
 ac_cv_func_getrrsetbyname=no \
+ac_cv_search_getrrsetbyname=no \
 ac_cv_func_endgrent=yes \
 ac_cv_func_fmt_scaled=no \
 ac_cv_func_getlastlogxbyname=no \
 ac_cv_func_readpassphrase=no \
 ac_cv_func_strnvis=no \
 ac_cv_header_sys_un_h=yes \
-ac_cv_search_getrrsetbyname=no \
 ac_cv_func_bzero=yes \
-ac_cv_func_close_range=no \
 ./configure \
-    --host="aarch64-linux-android" \
+    --host=aarch64-linux-android \
     --prefix="$OPENSSH_PREFIX" \
-    --sysconfdir="$OPENSSH_PREFIX/etc" \
+    --sysconfdir="$OPENSSH_PREFIX/etc/ssh" \
     --with-ssl-dir="$OPENSSL_PREFIX" \
+    --without-ldns \
     --without-pam \
     --without-kerberos5 \
-    --without-ldns \
     --without-libedit \
     --without-xauth \
-    --disable-strip \
+    --without-ssh1 \
+    --disable-etc-default-login \
     --disable-lastlog \
-    --disable-utmp \
-	--disable-utmpx \
-    --disable-wtmp \
-    --disable-wtmpx \
+    --disable-libutil \
     --disable-pututline \
     --disable-pututxline \
-	--disable-etc-default-login \
-	--disable-libutil \
-	--with-cflags=-Dfd_mask=int \
-	--without-ldns
+    --disable-strip \
+    --disable-utmp \
+    --disable-utmpx \
+    --disable-wtmp \
+    --disable-wtmpx
 
 make -j"$(nproc)"
 
