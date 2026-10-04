@@ -114,6 +114,7 @@ export CFLAGS="-O2 -ffunction-sections -fdata-sections"
 export CPPFLAGS="-I${OPENSSL_PREFIX}/include"
 export LDFLAGS="-static -L${OPENSSL_PREFIX}/lib -Wl,--gc-sections"
 
+ac_cv_func_close_range=no \
 ./configure \
     --host="aarch64-linux-android" \
     --prefix="$OPENSSH_PREFIX" \
@@ -137,8 +138,6 @@ make -j"$(nproc)"
 # ------------------------------------------------------------
 # Copy only ssh + scp
 # ------------------------------------------------------------
-
-ls --color
 
 rm -rf "$OUT"
 mkdir -p "$OUT"
