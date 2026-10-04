@@ -2,7 +2,7 @@
 set -e
 
 # ---------- Versi (sesuaikan jika ada yang lebih baru) ----------
-NDK_VER=r25c
+NDK_VER=r27c
 ZLIB_VER=1.3.1
 SSL_VER=3.3.2
 SSH_VER=9.9p1
@@ -69,6 +69,13 @@ EOF
 # 3. reallocarray: buat versi compat weak, agar tidak bentrok dengan libc.a
 sed -i 's|^reallocarray(|__attribute__((weak)) reallocarray(|' openbsd-compat/reallocarray.c
 
+# 4. pwcopy: bionic bisa mengembalikan field passwd = NULL
+sed -i 's|xstrdup(pw->pw_gecos)|xstrdup(pw->pw_gecos == NULL ? "" : pw->pw_gecos)|' misc.c
+sed -i 's|xstrdup(pw->pw_dir)|xstrdup(pw->pw_dir == NULL ? "/" : pw->pw_dir)|' misc.c
+sed -i 's|xstrdup(pw->pw_shell)|xstrdup(pw->pw_shell == NULL ? "/system/bin/sh" : pw->pw_shell)|' misc.c
+sed -i 's|xstrdup(pw->pw_class)|xstrdup(pw->pw_class == NULL ? "" : pw->pw_class)|' misc.c
+grep -n "pw->pw_" misc.c | grep xstrdup
+
 ac_cv_func_bzero=yes \
 ac_cv_func_reallocarray=no \
 ac_cv_have_decl_reallocarray=no \
@@ -94,7 +101,7 @@ sed -i 's|/\* #undef HAVE_ATTRIBUTE__SENTINEL__ \*/|#define HAVE_ATTRIBUTE__SENT
 sed -i 's|^#define HAVE_CLOSE_RANGE 1|/* #undef HAVE_CLOSE_RANGE */|' config.h
 
 make -j$(nproc) ssh scp
-$STRIP ssh scp
+#$STRIP ssh scp
 
 ls -a
 
