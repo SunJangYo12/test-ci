@@ -73,6 +73,10 @@ sed -i 's|static void (\* volatile ssh_bzero)(void \*, size_t) = bzero;|static v
 grep -n "ssh_bzero" explicit_bzero.c
 cd ..
 
+cd openbsd-compat
+echo 'typedef int getrrsetbyname_unused_t;' > getrrsetbyname.c
+cd ..
+
 make -j$(nproc) ssh scp
 $STRIP ssh scp
 
