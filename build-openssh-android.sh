@@ -2,7 +2,7 @@
 set -e
 
 # ---------- Versi (sesuaikan jika ada yang lebih baru) ----------
-NDK_VER=r27c
+NDK_VER=r25c
 ZLIB_VER=1.3.1
 SSL_VER=3.3.2
 SSH_VER=9.9p1
