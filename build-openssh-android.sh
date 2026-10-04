@@ -144,7 +144,8 @@ ac_cv_func_close_range=no \
     --disable-pututxline \
 	--disable-etc-default-login \
 	--disable-libutil \
-	--with-cflags=-Dfd_mask=int
+	--with-cflags=-Dfd_mask=int \
+	--without-ldns
 
 make -j"$(nproc)"
 
