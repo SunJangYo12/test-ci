@@ -1,4 +1,4 @@
-name: syzkaller build
+name: OpenSSH build
 
 on:
   push:
