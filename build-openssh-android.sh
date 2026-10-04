@@ -16,7 +16,7 @@ NDK_VERSION="r25c"
 API=24
 
 OPENSSL_VERSION="3.5.4"
-OPENSSH_VERSION="10.2p1"
+OPENSSH_VERSION="9.9p2"
 
 NDK_DIR="${WORK}/android-ndk-${NDK_VERSION}"
 TOOLCHAIN="${NDK_DIR}/toolchains/llvm/prebuilt/linux-x86_64"
@@ -114,7 +114,6 @@ export CFLAGS="-O2 -ffunction-sections -fdata-sections"
 export CPPFLAGS="-I${OPENSSL_PREFIX}/include"
 export LDFLAGS="-static -L${OPENSSL_PREFIX}/lib -Wl,--gc-sections"
 
-ac_cv_func_close_range=no \
 ./configure \
     --host="aarch64-linux-android" \
     --prefix="$OPENSSH_PREFIX" \
