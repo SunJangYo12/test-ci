@@ -86,7 +86,7 @@ ac_cv_func_freezero=no \
   --with-ssl-dir=$PREFIX \
   --without-pam \
   --disable-strip \
-  --with-ldflags="-static -L$PREFIX/lib" \
+  --with-ldflags="-L$PREFIX/lib" \
   --with-cppflags="-I$PREFIX/include"
 
 # Patch config.h
