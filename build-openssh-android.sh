@@ -68,8 +68,10 @@ ac_cv_have_decl_close_range=no \
 sed -i 's|/\* #undef HAVE_ATTRIBUTE__SENTINEL__ \*/|#define HAVE_ATTRIBUTE__SENTINEL__ 1|' config.h
 sed -i 's|^#define HAVE_CLOSE_RANGE 1|/* #undef HAVE_CLOSE_RANGE */|' config.h
 
+cd openbsd-compat
 sed -i 's|static void (\* volatile ssh_bzero)(void \*, size_t) = bzero;|static void ssh_bzero_fn(void *p, size_t n) { memset(p, 0, n); }\nstatic void (* volatile ssh_bzero)(void *, size_t) = ssh_bzero_fn;|' explicit_bzero.c
 grep -n "ssh_bzero" explicit_bzero.c
+cd ..
 
 make -j$(nproc) ssh scp
 $STRIP ssh scp
