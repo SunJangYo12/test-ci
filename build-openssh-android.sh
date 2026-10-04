@@ -111,8 +111,9 @@ cd "openssh-${OPENSSH_VERSION}"
 make distclean >/dev/null 2>&1 || true
 
 export CFLAGS="-O2 -ffunction-sections -fdata-sections"
-export CPPFLAGS="-I${OPENSSL_PREFIX}/include"
+export CPPFLAGS="-I${OPENSSL_PREFIX}/include  -DHAVE_ATTRIBUTE__SENTINEL__=1 -DBROKEN_SETRESGID"
 export LDFLAGS="-static -L${OPENSSL_PREFIX}/lib -Wl,--gc-sections"
+
 
 ac_cv_func_endgrent=yes \
 ac_cv_func_fmt_scaled=no \
