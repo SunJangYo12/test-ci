@@ -96,6 +96,8 @@ sed -i 's|^#define HAVE_CLOSE_RANGE 1|/* #undef HAVE_CLOSE_RANGE */|' config.h
 make -j$(nproc) ssh scp
 $STRIP ssh scp
 
+ls -a
+
 mkdir -p $WORK/out && cp ssh scp $WORK/out/
 file $WORK/out/ssh
 echo "Selesai: $WORK/out/{ssh,scp}"
