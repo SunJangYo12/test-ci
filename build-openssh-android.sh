@@ -138,6 +138,8 @@ make -j"$(nproc)"
 # Copy only ssh + scp
 # ------------------------------------------------------------
 
+ls --color
+
 rm -rf "$OUT"
 mkdir -p "$OUT"
 
