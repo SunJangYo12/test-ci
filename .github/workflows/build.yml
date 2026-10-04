@@ -38,7 +38,7 @@ jobs:
           mkdir -p output
 
           cp ~/mylog.txt output/
-          cp -R out output || true
+          cp -R android-ssh-build/out output || true
 
           tar czvf result.tar.gz \
             -C output .
