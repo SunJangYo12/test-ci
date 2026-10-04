@@ -52,7 +52,6 @@ export STRIP
 echo "CC=$CC"
 
 "$CC" --version
-
 # ------------------------------------------------------------
 # OpenSSL
 # ------------------------------------------------------------
@@ -68,19 +67,31 @@ fi
 
 cd "openssl-${OPENSSL_VERSION}"
 
-if [ ! -f "${OPENSSL_PREFIX}/lib/libcrypto.a" ]; then
+rm -f Makefile
 
-    make clean >/dev/null 2>&1 || true
+export ANDROID_NDK_ROOT="$NDK_DIR"
+export ANDROID_NDK_HOME="$NDK_DIR"
 
-    ./Configure android-arm64 \
-        --prefix="$OPENSSL_PREFIX" \
-        no-shared \
-        no-tests \
-        no-apps
+export PATH="${TOOLCHAIN}/bin:$PATH"
 
-    make -j"$(nproc)"
-    make install_sw
-fi
+export CC="${TOOLCHAIN}/bin/aarch64-linux-android${API}-clang"
+export CXX="${TOOLCHAIN}/bin/aarch64-linux-android${API}-clang++"
+export AR="${TOOLCHAIN}/bin/llvm-ar"
+export RANLIB="${TOOLCHAIN}/bin/llvm-ranlib"
+export STRIP="${TOOLCHAIN}/bin/llvm-strip"
+
+echo "OpenSSL CC=$CC"
+
+./Configure android-arm64 \
+    --prefix="$OPENSSL_PREFIX" \
+    -D__ANDROID_API__=${API} \
+    no-shared \
+    no-tests \
+    no-apps
+
+make -j"$(nproc)"
+make install_sw
+
 
 # ------------------------------------------------------------
 # OpenSSH
