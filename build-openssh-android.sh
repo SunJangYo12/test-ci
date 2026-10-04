@@ -47,6 +47,11 @@ cd $WORK/openssl-$SSL_VER
 make -j$(nproc) && make install_sw
 
 # ---------- OpenSSH ----------
+cd $WORK/openssh-$SSH_VER/openbsd-compat
+sed -i '0,/#include "includes.h"/s//#include "includes.h"\n#include <strings.h>/' explicit_bzero.c
+grep -n "strings.h" explicit_bzero.c   # harus muncul 1 baris
+cd ..
+
 cd $WORK/openssh-$SSH_VER
 
 ac_cv_func_bzero=yes \
