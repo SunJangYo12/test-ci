@@ -70,20 +70,25 @@ jobs:
 
           {
             echo "========================================"
+            echo " Patching ERROR"
+            echo "========================================"
+            sed -i '/extern size_t strlcpy(char \*dest, const char \*src, size_t size);/d' \ tools/include/linux/string.h
+
+            echo "========================================"
             echo " Linux 4 KCOV BUILD"
             echo "========================================"
 
             echo
             echo "=== Prepare ==="
-            make HOSTCFLAGS="-Wno-error=redundant-decls" prepare || true
+            make prepare
 
             echo
             echo "=== Kernel release ==="
-            make HOSTCFLAGS="-Wno-error=redundant-decls" -s kernelrelease || true
+            make -s kernelrelease
 
             echo
             echo "=== Build Debian packages ==="
-            make HOSTCFLAGS="-Wno-error=redundant-decls" -j$(nproc) bindeb-pkg || true
+            make -j$(nproc) bindeb-pkg
 
           } 2>&1 | tee -a ../mylog.txt
 
