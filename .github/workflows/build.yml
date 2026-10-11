@@ -34,11 +34,9 @@ jobs:
 
       - name: Download Linux 4
         run: |
-		  wget https://launchpad.net/ubuntu/+archive/primary/+files/linux_4.4.0-142.168.dsc
-		  wget https://launchpad.net/ubuntu/+archive/primary/+files/linux_4.4.0-142.168.diff.gz
-		  wget https://launchpad.net/ubuntu/+archive/primary/+files/linux_4.4.0.orig.tar.gz
-
-
+          wget https://launchpad.net/ubuntu/+archive/primary/+files/linux_4.4.0-142.168.dsc
+          wget https://launchpad.net/ubuntu/+archive/primary/+files/linux_4.4.0-142.168.diff.gz
+          wget https://launchpad.net/ubuntu/+archive/primary/+files/linux_4.4.0.orig.tar.gz
 
 
       - name: Extract source
