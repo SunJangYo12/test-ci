@@ -62,31 +62,6 @@ jobs:
             grep -E 'CONFIG_(KCOV|KCOV_ENABLE_COMPARISONS|KCOV_INSTRUMENT_ALL|FUNCTION_TRACER|FUNCTION_GRAPH_TRACER|DYNAMIC_FTRACE|BPF|BPF_SYSCALL|BPF_JIT|DEBUG_INFO|FRAME_POINTER|LOCALVERSION)=' .config
           } 2>&1 | tee ../mylog.txt
 
-      - name: Prepare and build kernel packages
-        run: |
-          set -o pipefail
-
-          cd linux-4.15.0
-
-          {
-            echo "========================================"
-            echo " Linux 4 KCOV BUILD"
-            echo "========================================"
-
-            echo
-            echo "=== Prepare ==="
-            make prepare
-
-            echo
-            echo "=== Kernel release ==="
-            make -s kernelrelease
-
-            echo
-            echo "=== Build Debian packages ==="
-            make -j$(nproc) bindeb-pkg
-
-          } 2>&1 | tee -a ../mylog.txt
-
       - name: Collect artifacts
         run: |
           mkdir -p output
