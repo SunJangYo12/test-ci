@@ -1,10 +1,10 @@
-name: Build Linux OEM 6.0 KCOV
+name: Build Linux 4 KCOV
 
 on:
   push:
-    branches: [master]
+    branches: [compile-kernel-linux_4.4.0-142]
   pull_request:
-    branches: [master]
+    branches: [compile-kernel-linux_4.4.0-142]
 
 jobs:
   build:
@@ -32,20 +32,23 @@ jobs:
             wget \
             xz-utils
 
-      - name: Download Linux OEM 6.0 source
+      - name: Download Linux 4
         run: |
-          wget https://security.ubuntu.com/ubuntu/ubuntu/pool/main/l/linux-oem-6.0/linux-oem-6.0_6.0.0.orig.tar.gz
-          wget https://security.ubuntu.com/ubuntu/ubuntu/pool/main/l/linux-oem-6.0/linux-oem-6.0_6.0.0-1021.21.diff.gz
-          wget https://security.ubuntu.com/ubuntu/ubuntu/pool/main/l/linux-oem-6.0/linux-oem-6.0_6.0.0-1021.21.dsc
+		  wget "https://launchpad.net/ubuntu/+archive/primary/+files/linux_4.4.0-142.168.dsc"
+		  wget "https://launchpad.net/ubuntu/+archive/primary/+files/linux_4.4.0-142.168.diff.gz"
+		  wget "https://launchpad.net/ubuntu/+archive/primary/+files/linux_4.4.0.orig.tar.gz"
+
+
+
 
       - name: Extract source
         run: |
-          dpkg-source -x linux-oem-6.0_6.0.0-1021.21.dsc
+          dpkg-source -x linux_4.4.0-142.168.dsc
 
       - name: Configure kernel
         run: |
           set -o pipefail
-          cd linux-oem-6.0-6.0.0
+          cd linux-4.4
           cp ../linux-config/.config .config
           {
             echo "=== Original config ==="
@@ -65,11 +68,11 @@ jobs:
         run: |
           set -o pipefail
 
-          cd linux-oem-6.0-6.0.0
+          cd linux-4.4
 
           {
             echo "========================================"
-            echo " Linux OEM 6.0 KCOV BUILD"
+            echo " Linux 4 KCOV BUILD"
             echo "========================================"
 
             echo
@@ -86,12 +89,6 @@ jobs:
 
           } 2>&1 | tee -a ../mylog.txt
 
-      - name: Show generated packages
-        run: |
-          echo "=== Generated .deb packages ==="
-          ls -lh ./*.deb 2>/dev/null || true
-          ls -lh linux-oem-6.0-6.0.0/*.deb 2>/dev/null || true
-
       - name: Collect artifacts
         run: |
           mkdir -p output
@@ -99,16 +96,16 @@ jobs:
           cp mylog.txt output/
 
           cp ./*.deb output/ 2>/dev/null || true
-          cp linux-oem-6.0-6.0.0/*.deb output/ 2>/dev/null || true
+          cp linux-4.4/*.deb output/ 2>/dev/null || true
 
           echo "=== Artifact contents ==="
           ls -lh output
 
-          tar czvf linux-oem-6-kcov.tar.gz \
+          tar czvf linux-4.4-kcov.tar.gz \
             -C output .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: linux-oem-6-kcov
-          path: linux-oem-6-kcov.tar.gz
+          name: linux-4.4
+          path: linux-4.4-kcov.tar.gz
