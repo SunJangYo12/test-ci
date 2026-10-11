@@ -34,19 +34,19 @@ jobs:
 
       - name: Download Linux 4
         run: |
-          wget https://launchpad.net/ubuntu/+archive/primary/+files/linux_4.4.0-142.168.dsc
-          wget https://launchpad.net/ubuntu/+archive/primary/+files/linux_4.4.0-142.168.diff.gz
-          wget https://launchpad.net/ubuntu/+archive/primary/+files/linux_4.4.0.orig.tar.gz
+          wget https://launchpad.net/ubuntu/+archive/primary/+files/linux_4.15.0-45.48.dsc
+          wget https://launchpad.net/ubuntu/+archive/primary/+files/linux_4.15.0.orig.tar.gz
+          wget https://launchpad.net/ubuntu/+archive/primary/+files/linux_4.15.0-45.48.diff.gz
 
 
       - name: Extract source
         run: |
-          dpkg-source -x linux_4.4.0-142.168.dsc
+          dpkg-source -x linux_4.15.0-45.48.dsc
 
       - name: Configure kernel
         run: |
           set -o pipefail
-          cd linux-4.4.0
+          cd linux-4.15.0
           cp ../linux-config/.config .config
           {
             echo "=== Original config ==="
@@ -66,7 +66,7 @@ jobs:
         run: |
           set -o pipefail
 
-          cd linux-4.4.0
+          cd linux-4.15.0
 
           {
             echo "========================================"
@@ -94,16 +94,16 @@ jobs:
           cp mylog.txt output/
 
           cp ./*.deb output/ 2>/dev/null || true
-          cp linux-4.4.0/*.deb output/ 2>/dev/null || true
+          cp linux-4.15.0/*.deb output/ 2>/dev/null || true
 
           echo "=== Artifact contents ==="
           ls -lh output
 
-          tar czvf linux-4.4-kcov.tar.gz \
+          tar czvf result.tar.gz \
             -C output .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: linux-4.4.0
-          path: linux-4.4-kcov.tar.gz
+          name: result
+          path: result.tar.gz
