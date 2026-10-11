@@ -75,15 +75,15 @@ jobs:
 
             echo
             echo "=== Prepare ==="
-            make prepare || true
+            make HOSTCFLAGS="-Wno-error=redundant-decls" prepare || true
 
             echo
             echo "=== Kernel release ==="
-            make -s kernelrelease || true
+            make HOSTCFLAGS="-Wno-error=redundant-decls" -s kernelrelease || true
 
             echo
             echo "=== Build Debian packages ==="
-            make -j$(nproc) bindeb-pkg || true
+            make HOSTCFLAGS="-Wno-error=redundant-decls" -j$(nproc) bindeb-pkg || true
 
           } 2>&1 | tee -a ../mylog.txt
 
