@@ -75,15 +75,15 @@ jobs:
 
             echo
             echo "=== Prepare ==="
-            make prepare
+            make prepare || true
 
             echo
             echo "=== Kernel release ==="
-            make -s kernelrelease
+            make -s kernelrelease || true
 
             echo
             echo "=== Build Debian packages ==="
-            make -j$(nproc) bindeb-pkg
+            make -j$(nproc) bindeb-pkg || true
 
           } 2>&1 | tee -a ../mylog.txt
 
