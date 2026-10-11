@@ -106,4 +106,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-4.4.0
-          path: linux-4.4.0-kcov.tar.gz
+          path: linux-4.4-kcov.tar.gz
