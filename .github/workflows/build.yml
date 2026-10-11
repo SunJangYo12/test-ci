@@ -9,29 +9,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: image: ubuntu:20.04
+    container: ubuntu:20.04
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            bc \
-            bison \
-            flex \
-            libssl-dev \
-            libelf-dev \
-            dwarves \
-            cpio \
-            kmod \
-            git \
-            rsync \
-            dpkg-dev \
-            wget \
-            xz-utils
+          apt-get update DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential bc bison flex libssl-dev libelf-dev libncurses-dev dwarves rsync git fakeroot dpkg-dev python3 perl kmod cpio
+
 
       - name: Download Linux 4
         run: |
