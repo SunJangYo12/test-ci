@@ -46,7 +46,7 @@ jobs:
       - name: Configure kernel
         run: |
           set -o pipefail
-          cd linux-4.4
+          cd linux-4.4.0
           cp ../linux-config/.config .config
           {
             echo "=== Original config ==="
@@ -66,7 +66,7 @@ jobs:
         run: |
           set -o pipefail
 
-          cd linux-4.4
+          cd linux-4.4.0
 
           {
             echo "========================================"
@@ -94,7 +94,7 @@ jobs:
           cp mylog.txt output/
 
           cp ./*.deb output/ 2>/dev/null || true
-          cp linux-4.4/*.deb output/ 2>/dev/null || true
+          cp linux-4.4.0/*.deb output/ 2>/dev/null || true
 
           echo "=== Artifact contents ==="
           ls -lh output
@@ -105,5 +105,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: linux-4.4
-          path: linux-4.4-kcov.tar.gz
+          name: linux-4.4.0
+          path: linux-4.4.0-kcov.tar.gz
