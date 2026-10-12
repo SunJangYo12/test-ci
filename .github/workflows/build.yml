@@ -60,7 +60,7 @@ jobs:
         run: |
           set -o pipefail
 
-          cd linux-oem-4.13.0
+          cd linux-oem-4.13.0 || true
 
           {
             echo "========================================"
