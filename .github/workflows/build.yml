@@ -61,23 +61,20 @@ jobs:
       - name: Run AFL++
         env:
           ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
+          AFL_NO_UI: 1
+          AFL_DEBUG: 1
         run: |
           mkdir -p findings
 
           set -o pipefail
           {
-            set +e
             afl-fuzz \
               -i ./fuzzing-corpus/jpg \
               -o findings \
               -m none \
-              -t 2000+ \
+              -t 5000+ \
               -V 240 \
               -- ./ijg-src/djpeg -outfile /dev/null @@
-
-            rc=$?
-            echo "AFL exit code: $rc"
-            exit 0
 
            } 2>&1 | tee -a ../mylog.txt
 
