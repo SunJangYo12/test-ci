@@ -37,10 +37,6 @@ jobs:
           wget https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.6.tar.xz
           tar -xf linux-4.6.tar.xz
 
-      - name: Extract source
-        run: |
-          dpkg-source -x linux_4.4.0-142.168.dsc
-
       - name: Configure kernel
         run: |
           set -o pipefail
