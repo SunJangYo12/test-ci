@@ -48,11 +48,6 @@ jobs:
 
            cd ijg-src
            export CC=afl-clang-fast
-           export CFLAGS="-O1 -g -fsanitize=address -fno-omit-frame-pointer"
-           export LDFLAGS="-fsanitize=address"
-           export AFL_USE_ASAN=1
-           export CFLAGS="-O1 -g"
-           export CXXFLAGS="-O1 -g"
 
            {
              ./configure
@@ -63,7 +58,6 @@ jobs:
 
       - name: Run AFL++
         env:
-          ASAN_OPTIONS: detect_leaks=0:abort_on_error=1:symbolize=0
           AFL_NO_UI: 1
           AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES: 1
           AFL_DEBUG: 1
