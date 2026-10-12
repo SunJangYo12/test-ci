@@ -60,13 +60,10 @@ jobs:
         run: |
           mkdir -p output
 
-          cp mylog.txt output/
+          cp ~/mylog.txt output/
 
           cp ./*.deb output/ 2>/dev/null || true
           cp linux-oem-4.13.0/*.deb output/ 2>/dev/null || true
-
-          echo "=== Artifact contents ==="
-          ls -lh output
 
           tar czvf result.tar.gz \
             -C output .
