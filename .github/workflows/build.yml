@@ -1,95 +1,82 @@
-name: Build Linux 4 KCOV
+
+name: Build Linux 4.6 KCOV
 
 on:
   push:
-    branches:
-      - compile-kernel-linux_4.4.0-142
+    branches: [compile-kernel-linux_4.6]
   pull_request:
-    branches:
-      - compile-kernel-linux_4.4.0-142
+    branches: [compile-kernel-linux_4.6]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ubuntu:16.04
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Install dependencies
         run: |
-          apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get install -y \
-            build-essential bc bison flex libssl-dev libelf-dev \
-            libncurses-dev dwarves rsync git fakeroot dpkg-dev \
-            python3 perl kmod cpio wget ca-certificates
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            bc bison flex \
+            libssl-dev libelf-dev \
+            dwarves cpio kmod \
+            git rsync dpkg-dev \
+            wget xz-utils
 
-      - name: Download Linux source
+      - name: Download Linux 4.6
         run: |
-          wget -O linux-oem_4.13.0-1032.36.dsc \
-            https://launchpad.net/ubuntu/+archive/primary/+files/linux-oem_4.13.0-1032.36.dsc
-          wget -O linux-oem_4.13.0.orig.tar.gz \
-            https://launchpad.net/ubuntu/+archive/primary/+files/linux-oem_4.13.0.orig.tar.gz
-          wget -O linux-oem_4.13.0-1032.36.diff.gz \
-            https://launchpad.net/ubuntu/+archive/primary/+files/linux-oem_4.13.0-1032.36.diff.gz
-
-      - name: Extract source
-        run: |
-          dpkg-source -x linux-oem_4.13.0-1032.36.dsc
+          wget https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.6.tar.xz
+          tar -xf linux-4.6.tar.xz
 
       - name: Configure kernel
         run: |
-          set -e
-          git clone https://github.com/sunjangyo12/test-ci
-          cd linux-oem-4.13.0
+          set -euo pipefail
+          cd linux-4.6
 
-          {
-            echo "=== Environment ==="
-            pwd
-            ls -la ..
-            cat /etc/os-release
-          } 2>&1 | tee -a "$HOME/mylog.txt"
+          cp ../linux-config/.config .config
 
-          cp ../test-ci/linux-config/.config .config
+          scripts/config --enable KCOV
+          scripts/config --set-str LOCALVERSION "-kcov"
 
-          scripts/config --enable CONFIG_KCOV
-          scripts/config --enable CONFIG_KCOV_ENABLE_COMPARISONS
-          scripts/config --set-str CONFIG_LOCALVERSION "-kcov"
+          make olddefconfig
 
-          make olddefconfig 2>&1 | tee -a "$HOME/mylog.txt"
+          echo "=== Compiler ==="
+          gcc --version
 
-      - name: Prepare and build kernel packages
+          echo "=== Kernel release ==="
+          make -s kernelrelease
+
+          echo "=== KCOV config ==="
+          grep -E '^CONFIG_(KCOV|KCOV_ENABLE_COMPARISONS|DEBUG_FS)=' \
+            .config || true
+
+          grep -q '^CONFIG_KCOV=y$' .config || {
+            echo "ERROR: CONFIG_KCOV is not enabled"
+            exit 1
+          }
+
+      - name: Prepare and build packages
         run: |
-          set -e
-          cd linux-oem-4.13.0
+          set -euo pipefail
+          cd linux-4.6
 
-          make prepare 2>&1 | tee -a "$HOME/mylog.txt"
-          make -s kernelrelease 2>&1 | tee -a "$HOME/mylog.txt"
-          make -j"$(nproc)" bindeb-pkg 2>&1 | tee -a "$HOME/mylog.txt"
+          make prepare
+          make -j"$(nproc)" bindeb-pkg
 
       - name: Collect artifacts
         if: always()
         run: |
           mkdir -p output
-
-          if [ -f "$HOME/mylog.txt" ]; then
-            cp "$HOME/mylog.txt" output/
-          fi
-
-          find . -type f -name '*.deb' \
-            -not -path './output/*' \
-            -exec cp -t output/ {} +
-
-          echo "=== Files collected ==="
-          find output -maxdepth 2 -type f -ls
-
-          tar -czvf result.tar.gz -C output .
-          ls -lh result.tar.gz
+          cp linux-4.6/*.deb output/ 2>/dev/null || true
+          tar czf linux-4.6-kcov.tar.gz -C output .
 
       - name: Upload artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: result
-          path: result.tar.gz
-          if-no-files-found: error
-          retention-days: 7
-
+          name: linux-4.6-kcov
+          path: linux-4.6-kcov.tar.gz
+          if-no-files-found: warn
