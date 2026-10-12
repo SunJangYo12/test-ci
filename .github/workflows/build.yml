@@ -42,7 +42,7 @@ jobs:
           tar -xzf jpegsrc.tar.gz
           mv jpeg-9c ijg-src
 
-      - name: Build with AFL++ and ASan
+      - name: Build with AFL and ASan
          run: |
            set -o pipefail
 
