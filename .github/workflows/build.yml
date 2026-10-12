@@ -3,9 +3,9 @@ name: Build Linux 4.6 KCOV
 
 on:
   push:
-    branches: [compile-kernel-linux_4.6]
+    branches: [compile-kernel-linux_4.4.0-142]
   pull_request:
-    branches: [compile-kernel-linux_4.6]
+    branches: [compile-kernel-linux_4.4.0-142]
   workflow_dispatch:
 
 jobs:
