@@ -62,8 +62,13 @@ jobs:
           set -o pipefail
 
           cd linux-4.6
+          export KCFLAGS="-fno-pie"
+          export HOSTCFLAGS="-fno-PIE"
 
           {
+            gcc --version
+            gcc -Q --help=common | grep sanitize-coverage
+
             echo "========================================"
             echo " Linux 4 KCOV BUILD"
             echo "========================================"
