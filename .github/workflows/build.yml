@@ -60,7 +60,7 @@ jobs:
 
       - name: Run AFL++
         env:
-          ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
+          ASAN_OPTIONS: detect_leaks=0:abort_on_error=1:symbolize=0
           AFL_NO_UI: 1
           AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES: 1
         run: |
