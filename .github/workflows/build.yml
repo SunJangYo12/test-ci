@@ -67,8 +67,15 @@ jobs:
             echo "starzzzzzzzzzzzzzzzzzzzzz"
             afl-fuzz --version
 
+            AFL_NO_UI=1 afl-fuzz \
+              -i ./fuzzing-corpus/jpg \
+              -o findings \
+              -m none \
+              -t 2000+ \
+              -V 240 \
+              -- ./ijg-src/djpeg @@ || true
 
-           } 2>&1 | tee -a ../mylog.txt
+          } 2>&1 | tee -a ../mylog.txt
 
       - name: Collect artifacts
         run: |
