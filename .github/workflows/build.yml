@@ -85,10 +85,3 @@ jobs:
           name: result
           path: result.tar.gz
 
-      - uses: actions/download-artifact@v4
-        with:
-          name: build-output
-          path: output/
-
-      - name: Check output
-        run: ls -la output/
