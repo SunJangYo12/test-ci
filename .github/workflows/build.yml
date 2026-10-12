@@ -73,8 +73,22 @@ jobs:
           tar czvf result.tar.gz \
             -C output .
 
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: result
           path: result.tar.gz
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: output/
+
+      - name: Check output
+        run: ls -la output/
