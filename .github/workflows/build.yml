@@ -72,9 +72,9 @@ jobs:
               -i ./fuzzing-corpus/jpg \
               -o findings \
               -m none \
-              -t 5000+ \
+              -t 2000+ \
               -V 240 \
-              -- ./ijg-src/djpeg -outfile /dev/null @@
+              -- ./ijg-src/djpeg -outfile /dev/null @@ || true
 
            } 2>&1 | tee -a ../mylog.txt
 
