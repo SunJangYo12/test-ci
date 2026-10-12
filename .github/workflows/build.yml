@@ -59,15 +59,16 @@ jobs:
            } 2>&1 | tee -a ../mylog.txt
 
       - name: Run AFL++
+        env:
+          ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
+          AFL_NO_UI: 1
+          AFL_I_DONT_CARE_ABOUT_MISSING_CRASHES: 1
         run: |
 
           set -o pipefail
           mkdir -p findings
           {
-            echo "starzzzzzzzzzzzzzzzzzzzzz"
-            afl-fuzz --version
-
-            AFL_NO_UI=1 afl-fuzz \
+            afl-fuzz \
               -i ./fuzzing-corpus/jpg \
               -o findings \
               -m none \
