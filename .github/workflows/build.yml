@@ -70,7 +70,7 @@ jobs:
               -m none \
               -t 2000+ \
               -V 240 \
-              -- ./ijg-src/djpeg -outfile /dev/null @@ || true
+              -- ./ijg-src/djpeg @@ || true
 
            } 2>&1 | tee -a ../mylog.txt
 
