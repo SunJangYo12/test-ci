@@ -31,7 +31,7 @@ jobs:
             dpkg-dev \
             wget \
             xz-utils \
-            afl++ clang make curl
+            afl++ clang make curl tree
 
       - name: Download vulnerable IJG version
         run: |
@@ -68,13 +68,16 @@ jobs:
           set -o pipefail
           mkdir -p findings
           {
+            ls -la ./ijg-src
+            ls -la ./ijg-src/.libs
+
             afl-fuzz \
               -i ./fuzzing-corpus/jpg \
               -o findings \
               -m none \
               -t 2000+ \
               -V 240 \
-              -- ./ijg-src/djpeg @@ || true
+              -- ./ijg-src/.libs/djpeg @@ || true
 
           } 2>&1 | tee -a mylog.txt
 
