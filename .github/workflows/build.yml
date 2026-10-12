@@ -35,9 +35,26 @@ jobs:
           set -o pipefail
 
           git clone https://github.com/sunjangyo12/test-ci
-          cd linux-oem-4.13.0
+          #cd linux-oem-4.13.0
 
-          cp ../test-ci/linux-config/.config .config
+          #cp ../test-ci/linux-config/.config .config
+          {
+            lsb_release -a
+            ls
+            pwd
+
+            echo "=== Original config ==="
+            #grep -E 'CONFIG_(KCOV|KCOV_ENABLE_COMPARISONS|KCOV_INSTRUMENT_ALL|FUNCTION_TRACER|FUNCTION_GRAPH_TRACER|DYNAMIC_FTRACE|BPF|BPF_SYSCALL|BPF_JIT|DEBUG_INFO|FRAME_POINTER|LOCALVERSION)=' .config
+
+            #scripts/config --enable CONFIG_KCOV
+            #scripts/config --enable CONFIG_KCOV_ENABLE_COMPARISONS
+            #scripts/config --set-str CONFIG_LOCALVERSION "-kcov"
+
+            #make olddefconfig
+
+            echo "=== Final config ==="
+            #grep -E 'CONFIG_(KCOV|KCOV_ENABLE_COMPARISONS|KCOV_INSTRUMENT_ALL|FUNCTION_TRACER|FUNCTION_GRAPH_TRACER|DYNAMIC_FTRACE|BPF|BPF_SYSCALL|BPF_JIT|DEBUG_INFO|FRAME_POINTER|LOCALVERSION)=' .config
+          } 2>&1 | tee ../mylog.txt
 
       - name: Prepare and build kernel packages
         run: |
