@@ -48,6 +48,7 @@ jobs:
 
            cd ijg-src
            export CC=afl-clang-fast
+           export CXX=afl-clang-fast++
 
            {
              ./configure
