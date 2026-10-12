@@ -34,7 +34,7 @@ jobs:
         run: |
           set -o pipefail
 
-          git clone https://github.com/sunjangyo12/test-ci
+          #git clone https://github.com/sunjangyo12/test-ci
           #cd linux-oem-4.13.0
 
           #cp ../test-ci/linux-config/.config .config
