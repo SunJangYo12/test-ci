@@ -1,10 +1,10 @@
-name: syzkaller build
+name: Fuzzing libjpeg
 
 on:
   push:
-    branches: [master]
+    branches: [fuzzing-libjpeg]
   pull_request:
-    branches: [master]
+    branches: [fuzzing-libjpeg]
 
 jobs:
   build:
@@ -30,58 +30,63 @@ jobs:
             rsync \
             dpkg-dev \
             wget \
-            xz-utils
+            xz-utils \
+            afl++ clang make curl
 
-      - name: Clone
+      - name: Download vulnerable IJG version
         run: |
-          git clone https://github.com/google/syzkaller.git
+          curl -fL \
+            https://www.ijg.org/files/jpegsrc.v9c.tar.gz \
+            -o jpegsrc.tar.gz
 
-      - name: Configure go
+          tar -xzf jpegsrc.tar.gz
+          mv jpeg-9c ijg-src
+
+      - name: Build with AFL++ and ASan
+         run: |
+           set -o pipefail
+
+           cd ijg-src
+           export CC=afl-clang-fast
+           export CFLAGS="-O1 -g -fsanitize=address -fno-omit-frame-pointer"
+           export LDFLAGS="-fsanitize=address"
+
+           {
+             ./configure
+             make -j2
+
+             test -x ./djpeg
+           } 2>&1 | tee -a ~/mylog.txt
+
+      - name: Run AFL++
+        env:
+          ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
         run: |
+          mkdir -p findings
+
           set -o pipefail
           {
-            wget https://dl.google.com/go/go1.7.6.linux-amd64.tar.gz
-            tar xzf go1.7.6.linux-amd64.tar.gz
+            set +e
+            afl-fuzz \
+              -i ./fuzzing-corpus/jpg \
+              -o findings \
+              -m none \
+              -t 2000+ \
+              -V 240 \
+              -- ./ijg-src/djpeg -outfile /dev/null @@
 
-          } 2>&1 | tee -a ~/mylog.txt
+            rc=$?
+            echo "AFL exit code: $rc"
+            exit 0
 
-      - name: Make
-        run: |
-          set -o pipefail
-          #export GOROOT=`pwd`/go
-          #export PATH=$GOROOT/bin:$PATH
-          #cd syzkaller
-          {
-            export GOROOT=`pwd`/go
-            export GOPATH=`pwd`/syzkaller-lab
-            export PATH=$GOROOT/bin:$PATH
-
-            mkdir -p syzkaller-lab/src/github.com/google
-            mv syzkaller syzkaller-lab/src/github.com/google
-            cd syzkaller-lab/src/github.com/google/syzkaller
-            git checkout c5707f5e5
-
-            go build github.com/google/syzkaller/syz-fuzzer || true
-
-            go build github.com/google/syzkaller/syz-manager || true
-
-            gcc -o syz-executor executor/executor.cc \
-                -lpthread -lrt -ldl \
-                -DGOOS_linux=1 -DGOARCH_amd64=1 \
-                -Wall -Wframe-larger-than=8192 \
-                -static-libgcc 2>&1 | head -30 || true
-
-          } 2>&1 | tee -a ~/mylog.txt
+           } 2>&1 | tee -a ~/mylog.txt
 
       - name: Collect artifacts
         run: |
           mkdir -p output
 
           cp ~/mylog.txt output/
-
-          cp -R syzkaller-lab/src/github.com/google/syzkaller/syz-fuzzer output 2>/dev/null || true
-          cp -R syzkaller-lab/src/github.com/google/syzkaller/syz-manager output 2>/dev/null || true
-          cp -R syzkaller-lab/src/github.com/google/syzkaller/syz-executor output 2>/dev/null || true
+          cp -R ~/findings output
 
           tar czvf result.tar.gz \
             -C output .
