@@ -51,6 +51,8 @@ jobs:
            export CXX=afl-clang-fast++
 
            {
+             afl-clang-fast -o ../fuzzing-corpus/persistent_demo ../fuzzing-corpus/persistent_demo.c
+
              ./configure
              make -j2
 
@@ -76,7 +78,7 @@ jobs:
               -m none \
               -t 2000+ \
               -V 240 \
-              -- ./ijg-src/.libs/djpeg @@ || true
+              -- ./fuzzing-corpus/persistent_demo || true
 
           } 2>&1 | tee -a mylog.txt
 
