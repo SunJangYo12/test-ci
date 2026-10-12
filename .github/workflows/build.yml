@@ -51,9 +51,14 @@ jobs:
         run: |
           cd linux-oem-4.13.0
 
-          make prepare || true | tee -a ~/mylog.txt
-          make -s kernelrelease || true | tee -a ~/mylog.txt
-          make -j$(nproc) bindeb-pkg || true | tee -a ~/mylog.txt
+          make prepare || true |
+             tee -a ~/mylog.txt
+
+          make -s kernelrelease || true |
+             tee -a ~/mylog.txt
+
+          make -j$(nproc) bindeb-pkg || true |
+             tee -a ~/mylog.txt
 
 
       - name: Collect artifacts
