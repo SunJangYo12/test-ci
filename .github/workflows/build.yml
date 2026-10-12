@@ -43,7 +43,7 @@ jobs:
           mv jpeg-9c ijg-src
 
       - name: Build with AFL and ASan
-         run: |
+        run: |
            set -o pipefail
 
            cd ijg-src
