@@ -56,7 +56,7 @@ jobs:
              make -j2
 
              test -x ./djpeg
-           } 2>&1 | tee -a ~/mylog.txt
+           } 2>&1 | tee -a ../mylog.txt
 
       - name: Run AFL++
         env:
@@ -79,14 +79,14 @@ jobs:
             echo "AFL exit code: $rc"
             exit 0
 
-           } 2>&1 | tee -a ~/mylog.txt
+           } 2>&1 | tee -a ../mylog.txt
 
       - name: Collect artifacts
         run: |
           mkdir -p output
 
-          cp ~/mylog.txt output/
-          cp -R ~/findings output
+          cp mylog.txt output/
+          cp -R findings output
 
           tar czvf result.tar.gz \
             -C output .
