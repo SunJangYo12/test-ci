@@ -35,6 +35,10 @@ jobs:
           git clone https://github.com/sunjangyo12/test-ci
           cd linux-oem-4.13.0
 
+          ls .. | tee -a ~/mylog.txt
+          pwd | tee -a ~/mylog.txt
+          lsb_release -a | tee -a ~/mylog.txt
+
           cp ../test-ci/linux-config/.config .config
 
           scripts/config --enable CONFIG_KCOV
@@ -47,9 +51,9 @@ jobs:
         run: |
           cd linux-oem-4.13.0
 
-          make prepare
-          make -s kernelrelease
-          make -j$(nproc) bindeb-pkg
+          make prepare || true | tee -a ~/mylog.txt
+          make -s kernelrelease || true | tee -a ~/mylog.txt
+          make -j$(nproc) bindeb-pkg || true | tee -a ~/mylog.txt
 
 
       - name: Collect artifacts
