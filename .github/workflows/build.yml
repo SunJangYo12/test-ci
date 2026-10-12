@@ -64,6 +64,7 @@ jobs:
 
           set -o pipefail
           {
+            echo "starzzzzzzzzzzzzzzzzzzzzz"
             AFL_NO_UI=1 afl-fuzz \
               -i ./fuzzing-corpus/jpg \
               -o findings \
