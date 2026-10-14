@@ -103,7 +103,7 @@ jobs:
           cp System.map ../release/System.map
           cp .config ../release/kernel.config
 
-          cp vmlinux > ../release/vmlinux
+          cp vmlinux ../release/vmlinux
 
 
 
