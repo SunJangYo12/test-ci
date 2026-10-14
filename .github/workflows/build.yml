@@ -2,9 +2,11 @@ name: Build Linux OEM 6.0 KCOV
 
 on:
   push:
-    branches: [master]
-  pull_request:
-    branches: [master]
+    branches: [compile-kernel6]
+  workflow_dispatch:
+
+permissions:
+  contents: write   # wajib untuk membuat release
 
 jobs:
   build:
@@ -112,3 +114,20 @@ jobs:
         with:
           name: linux-oem-6-kcov
           path: linux-oem-6-kcov.tar.gz
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="kcov-6.0.0-1021-run${{ github.run_number }}"
+          cd output
+          sha256sum *.deb ../linux-oem-6-kcov.tar.gz > checksums.txt
+          gh release create "$TAG" \
+            ../linux-oem-6-kcov.tar.gz \
+            *.deb \
+            mylog.txt \
+            checksums.txt \
+            --target "${{ github.sha }}" \
+            --title "Linux OEM 6.0 KCOV (run ${{ github.run_number }})" \
+            --notes "Build kernel 6.0.0-1021 dengan KCOV dan KCOV_ENABLE_COMPARISONS. Commit: ${{ github.sha }}" \
+            --prerelease
