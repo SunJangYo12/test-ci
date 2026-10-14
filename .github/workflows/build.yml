@@ -128,13 +128,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="kcov-6.0.0-1021-run${{ github.run_number }}"
-          cd output
+          TAG="kcov-6.0.9-run${{ github.run_number }}"
           gh release create "$TAG" \
-            ../linux-oem-6-kcov.tar.gz \
-            *.deb \
-            mylog.txt \
+            linux-oem-6-kcov.tar.gz \
             --target "${{ github.sha }}" \
-            --title "Linux OEM 6.0 KCOV (run ${{ github.run_number }})" \
-            --notes "Build kernel 6.0.0-1021 dengan KCOV dan KCOV_ENABLE_COMPARISONS. Commit: ${{ github.sha }}" \
+            --title "Linux 6.0.9 KCOV (run ${{ github.run_number }})" \
+            --notes "bzImage + vmlinux dengan KCOV. Commit: ${{ github.sha }}" \
             --prerelease
+
