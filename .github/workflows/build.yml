@@ -94,17 +94,26 @@ jobs:
           ls -lh ./*.deb 2>/dev/null || true
           ls -lh linux-oem-6.0-6.0.0/*.deb 2>/dev/null || true
 
+      - name: Collect bzImage and vmlinux
+        run: |
+          cd linux-oem-6.0-6.0.0
+          mkdir -p ../release
+
+          cp arch/x86/boot/bzImage ../release/bzImage
+          cp System.map ../release/System.map
+          cp .config ../release/kernel.config
+
+          cp vmlinux > ../release/vmlinux
+
+
+
       - name: Collect artifacts
         run: |
           mkdir -p output
 
           cp mylog.txt output/
 
-          cp ./*.deb output/ 2>/dev/null || true
-          cp linux-oem-6.0-6.0.0/*.deb output/ 2>/dev/null || true
-
-          echo "=== Artifact contents ==="
-          ls -lh output
+          cp -r release output/ 2>/dev/null || true
 
           tar czvf linux-oem-6-kcov.tar.gz \
             -C output .
@@ -121,12 +130,10 @@ jobs:
         run: |
           TAG="kcov-6.0.0-1021-run${{ github.run_number }}"
           cd output
-          sha256sum *.deb ../linux-oem-6-kcov.tar.gz > checksums.txt
           gh release create "$TAG" \
             ../linux-oem-6-kcov.tar.gz \
             *.deb \
             mylog.txt \
-            checksums.txt \
             --target "${{ github.sha }}" \
             --title "Linux OEM 6.0 KCOV (run ${{ github.run_number }})" \
             --notes "Build kernel 6.0.0-1021 dengan KCOV dan KCOV_ENABLE_COMPARISONS. Commit: ${{ github.sha }}" \
