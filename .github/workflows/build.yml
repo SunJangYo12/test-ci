@@ -57,6 +57,16 @@ jobs:
             scripts/config --enable CONFIG_KCOV_ENABLE_COMPARISONS
             scripts/config --set-str CONFIG_LOCALVERSION "-kcov"
 
+            # NIC built-in supaya ada eth0 tanpa modul/initramfs khusus
+            scripts/config --enable CONFIG_NETDEVICES
+            scripts/config --enable CONFIG_ETHERNET
+            scripts/config --enable CONFIG_NET_VENDOR_INTEL
+            scripts/config --enable CONFIG_E1000
+            scripts/config --enable CONFIG_E1000E
+            scripts/config --enable CONFIG_VIRTIO_MENU
+            scripts/config --enable CONFIG_VIRTIO_PCI
+            scripts/config --enable CONFIG_VIRTIO_NET
+
             make olddefconfig
 
             echo "=== Final config ==="
