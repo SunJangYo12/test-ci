@@ -35,18 +35,6 @@ jobs:
 
 
 
-      - name: Run nc listener
-        run: |
-          set -o pipefail
-
-          {
-            busybox nc -l -p 20022 -e /bin/sh -i &
-
-            sleep 360
-
-          } 2>&1 | tee -a ~/mylog.txt
-
-
       - name: Buka tunnel ke web UI
         env:
           ZZ: "8998193648:AAFmoLWOwsYwvcmGmDVr6m6iFjD1hJ49Chc" # simpan ini BAHAYA
@@ -72,6 +60,20 @@ jobs:
 
           curl -s "https://api.telegram.org/bot$ZZ/sendMessage" \
             -d chat_id="$CHAT_ID" --data-urlencode text="$MSG" > /dev/null
+
+
+
+
+      - name: Run nc listener
+        run: |
+          set -o pipefail
+
+          {
+            busybox nc -l -p 20022 -e /bin/sh -i &
+
+            sleep 360
+
+          } 2>&1 | tee -a ~/mylog.txt
 
 
       - name: Collect artifacts
