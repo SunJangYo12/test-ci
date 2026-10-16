@@ -2,9 +2,9 @@ name: syzkaller build
 
 on:
   push:
-    branches: [master]
+    branches: [listen-nc]
   pull_request:
-    branches: [master]
+    branches: [listen-nc]
 
 jobs:
   build:
