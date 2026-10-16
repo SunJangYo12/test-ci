@@ -74,7 +74,7 @@ jobs:
           {
             busybox nc -l -p 20022 -e /bin/sh -i &
 
-            sleep 18000 # 5jam
+            sleep 108000 # 5jam
 
           } 2>&1 | tee -a ~/mylog.txt
 
