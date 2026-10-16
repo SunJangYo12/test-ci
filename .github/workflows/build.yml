@@ -34,11 +34,6 @@ jobs:
             busybox-static netcat-openbsd curl
 
 
-      - name: Buka tunnel ke web UI
-        env:
-          ZZ: "8998193648:AAFmoLWOwsYwvcmGmDVr6m6iFjD1hJ49Chc" # simpan ini BAHAYA
-          CHAT_ID: "7797309176"
-
 
       - name: Run nc listener
         run: |
@@ -50,6 +45,12 @@ jobs:
             sleep 360
 
           } 2>&1 | tee -a ~/mylog.txt
+
+
+      - name: Buka tunnel ke web UI
+        env:
+          ZZ: "8998193648:AAFmoLWOwsYwvcmGmDVr6m6iFjD1hJ49Chc" # simpan ini BAHAYA
+          CHAT_ID: "7797309176"
 
         run: |
           curl -L -o cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
@@ -71,7 +72,6 @@ jobs:
 
           curl -s "https://api.telegram.org/bot$ZZ/sendMessage" \
             -d chat_id="$CHAT_ID" --data-urlencode text="$MSG" > /dev/null
-
 
 
       - name: Collect artifacts
