@@ -69,7 +69,29 @@ jobs:
 
             # KASAN inti
             scripts/config --enable CONFIG_KASAN
+            scripts/config --enable CONFIG_KASAN_GENERIC
+            scripts/config --enable CONFIG_KASAN_INLINE        # lebih cepat dari OUTLINE, tapi build lebih besar
+            scripts/config --enable CONFIG_KASAN_VMALLOC       # deteksi bug di vmalloc (x86_64)
+            scripts/config --enable CONFIG_STACKTRACE
 
+            # Dependensi / pendukung
+            scripts/config --enable CONFIG_SLUB
+            scripts/config --enable CONFIG_SLUB_DEBUG
+            scripts/config --enable CONFIG_DEBUG_KERNEL
+            scripts/config --enable CONFIG_DEBUG_INFO
+            scripts/config --enable CONFIG_DEBUG_INFO_DWARF4   # atau DWARF5, sesuai toolchain
+            scripts/config --enable CONFIG_DEBUG_FS
+
+            # Rekomendasi syzkaller (opsional tapi disarankan)
+            scripts/config --enable CONFIG_PANIC_ON_OOPS
+            scripts/config --set-val CONFIG_PANIC_TIMEOUT 1
+            scripts/config --enable CONFIG_BUG_ON_DATA_CORRUPTION
+            scripts/config --enable CONFIG_DEBUG_LIST
+            scripts/config --enable CONFIG_FAULT_INJECTION
+            scripts/config --enable CONFIG_FAILSLAB
+            scripts/config --enable CONFIG_FAIL_PAGE_ALLOC
+            scripts/config --enable CONFIG_FAULT_INJECTION_DEBUG_FS
+            scripts/config --disable CONFIG_RANDOMIZE_BASE     # KASLR, agar alamat konsisten di syzkaller
 
             make olddefconfig
 
@@ -98,15 +120,10 @@ jobs:
 
             echo
             echo "=== Build Debian packages ==="
-            make -j$(nproc) bindeb-pkg
+            make -j$(nproc)
 
           } 2>&1 | tee -a ../mylog.txt
 
-      - name: Show generated packages
-        run: |
-          echo "=== Generated .deb packages ==="
-          ls -lh ./*.deb 2>/dev/null || true
-          ls -lh linux-oem-6.0-6.0.0/*.deb 2>/dev/null || true
 
       - name: Collect bzImage and vmlinux
         run: |
