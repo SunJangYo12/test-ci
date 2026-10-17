@@ -74,17 +74,9 @@ jobs:
             scripts/config --enable CONFIG_KASAN_VMALLOC       # deteksi bug di vmalloc (x86_64)
             scripts/config --enable CONFIG_STACKTRACE
 
-            # Dependensi / pendukung
-            scripts/config --enable CONFIG_SLUB
-            scripts/config --enable CONFIG_SLUB_DEBUG
-            scripts/config --enable CONFIG_DEBUG_KERNEL
-            scripts/config --enable CONFIG_DEBUG_INFO
-            scripts/config --enable CONFIG_DEBUG_INFO_DWARF4   # atau DWARF5, sesuai toolchain
-            scripts/config --enable CONFIG_DEBUG_FS
 
             # Rekomendasi syzkaller (opsional tapi disarankan)
             scripts/config --enable CONFIG_PANIC_ON_OOPS
-            scripts/config --set-val CONFIG_PANIC_TIMEOUT 1
             scripts/config --enable CONFIG_BUG_ON_DATA_CORRUPTION
             scripts/config --enable CONFIG_DEBUG_LIST
             scripts/config --enable CONFIG_FAULT_INJECTION
