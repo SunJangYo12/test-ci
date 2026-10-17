@@ -74,8 +74,6 @@ jobs:
             scripts/config --enable CONFIG_KASAN_VMALLOC       # deteksi bug di vmalloc (x86_64)
             scripts/config --enable CONFIG_STACKTRACE
 
-            # Rekomendasi syzkaller (opsional tapi disarankan)
-            scripts/config --enable CONFIG_FAULT_INJECTION_DEBUG_FS
 
             make olddefconfig
 
