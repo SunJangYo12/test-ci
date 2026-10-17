@@ -114,14 +114,10 @@ jobs:
             echo "=== Prepare ==="
             make prepare
 
-            echo
-            echo "=== Kernel release ==="
-            make -s kernelrelease || true
-            df -h
 
             echo
             echo "=== Build Debian packages ==="
-            make -j$(nproc) || true
+            make -j$(nproc) bzImage
             df -h
           } 2>&1 | tee -a ../mylog.txt
 
