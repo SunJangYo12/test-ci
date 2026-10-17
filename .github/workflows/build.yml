@@ -69,8 +69,6 @@ jobs:
 
             # KASAN inti
             scripts/config --enable CONFIG_KASAN
-            scripts/config --enable CONFIG_KASAN_GENERIC
-            scripts/config --enable CONFIG_KASAN_VMALLOC       # deteksi bug di vmalloc (x86_64)
 
 
             make olddefconfig
