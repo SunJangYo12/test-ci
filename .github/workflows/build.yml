@@ -121,7 +121,7 @@ jobs:
 
             echo
             echo "=== Build Debian packages ==="
-            make -j$(nproc) bindeb-pkg || true
+            make -j$(nproc) || true
             df -h
           } 2>&1 | tee -a ../mylog.txt
 
