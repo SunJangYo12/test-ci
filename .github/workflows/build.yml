@@ -70,9 +70,7 @@ jobs:
             # KASAN inti
             scripts/config --enable CONFIG_KASAN
             scripts/config --enable CONFIG_KASAN_GENERIC
-            scripts/config --enable CONFIG_KASAN_INLINE        # lebih cepat dari OUTLINE, tapi build lebih besar
             scripts/config --enable CONFIG_KASAN_VMALLOC       # deteksi bug di vmalloc (x86_64)
-            scripts/config --enable CONFIG_STACKTRACE
 
 
             make olddefconfig
