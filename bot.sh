@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 # Telegram command bot sederhana.
 # Pemakaian: ./bot.sh <TOKEN> <CHAT_ID>
 # Hanya CHAT_ID tersebut yang boleh mengirim command.
