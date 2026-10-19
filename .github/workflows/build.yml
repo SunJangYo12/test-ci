@@ -40,7 +40,7 @@ jobs:
 
       - name: Buka tunnel ke web UI
         env:
-          ZZ: "8998193648:AAFmoLWOwsYwvcmGmDVr6m6iFjD1hJ49Chc" # simpan ini BAHAYA
+          CHAT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID: "7797309176"
 
         run: |
@@ -61,8 +61,12 @@ jobs:
             MSG="GAGAL listener publik url"
           fi
 
-          curl -s "https://api.telegram.org/bot$ZZ/sendMessage" \
+          curl -s "https://api.telegram.org/bot$CHAT_TOKEN/sendMessage" \
             -d chat_id="$CHAT_ID" --data-urlencode text="$MSG" > /dev/null
+
+          chmod +x ./bot.sh
+          nohup ./bot.sh "$CHAT_TOKEN" "$CHAT_ID" > ~/bot.log 2>&1 &
+
 
 
 
