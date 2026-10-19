@@ -50,8 +50,8 @@ jobs:
 
           pwd
           git clone https://github.com/sunjangyo12/test-ci
-          git checkout listen-nc
           cd test-ci
+          git checkout listen-nc
           chmod +x ./bot.sh
           nohup ./bot.sh "$CHAT_TOKEN" "$CHAT_ID" > ~/bot.log 2>&1 &
 
