@@ -56,7 +56,7 @@ jobs:
           done
 
           if [ -n "$URL" ]; then
-            MSG="Listener: $URL"
+            MSG="NC Listener: $URL"
           else
             MSG="GAGAL listener publik url"
           fi
