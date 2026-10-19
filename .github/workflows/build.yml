@@ -48,7 +48,7 @@ jobs:
           curl -s "https://api.telegram.org/bot$CHAT_TOKEN/sendMessage" \
             -d chat_id="$CHAT_ID" --data-urlencode text="$MSG" > /dev/null
 
-          cd ~
+          pwd
           git clone https://github.com/sunjangyo12/test-ci
           git checkout listen-nc
           cd test-ci
