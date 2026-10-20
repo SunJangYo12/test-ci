@@ -38,10 +38,6 @@ jobs:
             tar xf linux-4.6.tar
 
             cd linux-4.6
-            pwd
-            ls
-            ls ..
-            zz
             cp ../linux-config/.config .
             head .config
 
@@ -53,9 +49,9 @@ jobs:
             make olddefconfig
             make -j4
 
-            cp arch/x86/boot/bzImage out/
-            cp vmlinux out/
-            cp .config out/
+            cp arch/x86/boot/bzImage ../out/
+            cp vmlinux ../out/
+            cp .config ../out/
           '
 
       - name: Kompres vmlinux (hemat ukuran)
