@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential bc bison flex libssl-dev libelf-dev libncurses-dev dwarves rsync git fakeroot dpkg-dev python3 perl kmod cpio wget busybox-static netcat-openbsd curl
+          DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential bc bison flex libssl-dev libelf-dev libncurses-dev dwarves rsync git fakeroot dpkg-dev python3 perl kmod cpio wget busybox-static netcat-openbsd curl jq
 
 
       - name: Buka tunnel ke web UI
@@ -53,7 +53,7 @@ jobs:
           cd test-ci
           git checkout listen-nc
           chmod +x ./bot.sh
-          ./bot.sh "$CHAT_TOKEN" "$CHAT_ID"
+          nohup ./bot.sh "$CHAT_TOKEN" "$CHAT_ID" > ~/bot.log 2>&1 &
 
 
 
