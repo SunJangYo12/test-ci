@@ -57,8 +57,8 @@ jobs:
       - name: Kompres vmlinux (hemat ukuran)
         run: |
           sudo chown -R $USER out
-          xz -T0 -9 out/vmlinux
-          xz -T0 -9 out/bzImage
+          sudo xz -T0 -9 out/vmlinux
+          sudo xz -T0 -9 out/bzImage
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
