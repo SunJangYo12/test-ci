@@ -1,10 +1,15 @@
-name: Build Linux 4 KCOV
+name: Build Linux container
 
 on:
   push:
-    branches: [compile-kernel-linux_4.4.0-142]
+    branches: [compile-cont-kernel6]
   pull_request:
-    branches: [compile-kernel-linux_4.4.0-142]
+    branches: [compile-cont-kernel6]
+
+
+permissions:
+  contents: write   # wajib untuk membuat release
+
 
 jobs:
   build:
@@ -12,6 +17,71 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Build kernel di ubuntu:16.04
+        run: |
+          mkdir -p out
+          docker run --rm -v "$PWD:/work" -w /work ubuntu:16.04 bash -euxc '
+            apt-get update
+            apt-get install -y software-properties-common
+            add-apt-repository -y ppa:ubuntu-toolchain-r/test
+            apt-get update
+
+            DEBIAN_FRONTEND=noninteractive apt-get install -y gcc-6 g++-6 build-essential bc bison flex libssl-dev libelf-dev libncurses5-dev xz-utils dwarves rsync git fakeroot dpkg-dev python3 perl kmod cpio wget busybox-static netcat-openbsd curl jq
+
+            update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 100 --slave /usr/bin/g++ g++ /usr/bin/g++-6
+
+            # ... langkah build kernel kamu di sini ...
+
+            curl -LO https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.6.tar.xz
+            xz -d linux-4.6.tar.xz
+            tar xf linux-4.6.tar
+
+            cd linux-4.6
+            cp ../test-ci/linux-config/.config .
+            head .config
+
+            scripts/config --enable CONFIG_KCOV
+            scripts/config --enable CONFIG_KCOV_ENABLE_COMPARISONS
+            scripts/config --set-str CONFIG_LOCALVERSION "-kcov"
+            scripts/config --disable RANDOMIZE_BASE
+
+            make olddefconfig
+
+
+            cp arch/x86/boot/bzImage out/
+            cp vmlinux out/
+            cp .config out/
+          '
+
+      - name: Kompres vmlinux (hemat ukuran)
+        run: |
+          sudo chown -R $USER out
+          xz -T0 -9 out/vmlinux
+          xz -T0 -9 out/bzImage
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-${{ github.run_number }}
+          path: out/
+          retention-days: 14
+
+      - name: Buat release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('build-{0}', github.run_number) }}
+          name: Kernel build ${{ github.run_number }}
+          files: |
+            out/bzImage.xz
+            out/vmlinux.xz
+            out/.config
+
+
+
+
+
+
 
       - name: Install dependencies
         run: |
