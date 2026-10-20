@@ -38,7 +38,7 @@ jobs:
             tar xf linux-4.6.tar
 
             cd linux-4.6
-            cp linux-config/.config .
+            cp ../linux-config/.config .
             head .config
 
             scripts/config --enable CONFIG_KCOV
