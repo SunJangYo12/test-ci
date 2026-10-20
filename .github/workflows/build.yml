@@ -38,6 +38,10 @@ jobs:
             tar xf linux-4.6.tar
 
             cd linux-4.6
+            pwd
+            ls
+            ls ..
+            zz
             cp ../linux-config/.config .
             head .config
 
