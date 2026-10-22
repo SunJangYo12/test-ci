@@ -33,11 +33,11 @@ jobs:
 
             # ... langkah build kernel kamu di sini ...
 
-            curl -LO https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.6.tar.xz
-            xz -d linux-4.6.tar.xz
-            tar xf linux-4.6.tar
+            curl -LO https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.6.7.tar.xz
+            xz -d linux-4.6.7.tar.xz
+            tar xf linux-4.6.7.tar
 
-            cd linux-4.6
+            cd linux-4.6.7
             cp ../linux-config/.config .
             head .config
 
@@ -91,22 +91,14 @@ jobs:
         run: |
           sudo chown -R $USER out
           sudo xz -T0 -9 out/vmlinux
-          sudo xz -T0 -9 out/bzImage
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: kernel-${{ github.run_number }}
-          path: out/
-          retention-days: 14
 
       - name: Buat release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('build-{0}', github.run_number) }}
-          name: Kernel build ${{ github.run_number }}
+          tag_name: v4.6.7
+          name: v4.6.7
           files: |
-            out/bzImage.xz
+            out/bzImage
             out/vmlinux.xz
             out/.config
 
