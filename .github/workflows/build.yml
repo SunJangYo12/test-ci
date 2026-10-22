@@ -2,9 +2,9 @@ name: Build Linux container
 
 on:
   push:
-    branches: [compile-cont-kernel6]
+    branches: [compile-cont-kernel4.6]
   pull_request:
-    branches: [compile-cont-kernel6]
+    branches: [compile-cont-kernel4.6]
 
 
 permissions:
