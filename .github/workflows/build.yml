@@ -41,7 +41,9 @@ jobs:
             mv patch-4.6.7.xz linux-4.6.7
 
             cd linux-4.6.7
-            #xzcat patch-4.6.7.xz | patch -p1
+
+            # patch tun/tap
+            sed -i 's/^\([[:space:]]*\)netif_rx_ni(skb);/\1local_bh_disable();\n\1netif_receive_skb(skb);\n\1local_bh_enable();/' drivers/net/tun.c
 
             cp ../linux-config/.config .
             head .config
