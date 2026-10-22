@@ -34,10 +34,15 @@ jobs:
             # ... langkah build kernel kamu di sini ...
 
             curl -LO https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.6.7.tar.xz
+            curl -LO https://cdn.kernel.org/pub/linux/kernel/v4.x/patch-4.6.7.xz
+
             xz -d linux-4.6.7.tar.xz
             tar xf linux-4.6.7.tar
+            mv patch-4.6.7.xz linux-4.6.7
 
             cd linux-4.6.7
+            xzcat patch-4.6.7.xz | patch -p1
+
             cp ../linux-config/.config .
             head .config
 
