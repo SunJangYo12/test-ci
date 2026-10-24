@@ -2,9 +2,9 @@ name: Build Linux container
 
 on:
   push:
-    branches: [compile-cont-kernel4.13]
+    branches: [compile-cont-kernel5.1.0-rc7]
   pull_request:
-    branches: [compile-cont-kernel4.13]
+    branches: [compile-cont-kernel5.1.0-rc7]
 
 
 permissions:
@@ -18,30 +18,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build kernel di ubuntu:16.04
+      - name: Build kernel di ubuntu:20.04
         run: |
           mkdir -p out
-          docker run --rm -v "$PWD:/work" -w /work ubuntu:16.04 bash -euxc '
-            apt-get update
-            apt-get install -y software-properties-common
-            add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          docker run --rm -v "$PWD:/work" -w /work ubuntu:20.04 bash -euxc '
             apt-get update
 
-            DEBIAN_FRONTEND=noninteractive apt-get install -y gcc-6 g++-6 build-essential bc bison flex libssl-dev libelf-dev libncurses5-dev xz-utils dwarves rsync git fakeroot dpkg-dev python3 perl kmod cpio wget busybox-static netcat-openbsd curl jq
-
-            update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 100 --slave /usr/bin/g++ g++ /usr/bin/g++-6
+            DEBIAN_FRONTEND=noninteractive apt-get install -y gcc g++ build-essential bc bison flex libssl-dev libelf-dev libncurses5-dev xz-utils dwarves rsync git fakeroot dpkg-dev python3 perl kmod cpio wget busybox-static netcat-openbsd curl jq
 
             # ... langkah build kernel kamu di sini ...
 
-            curl -LO https://launchpad.net/ubuntu/+archive/primary/+files/linux-oem_4.13.0-1032.36.dsc
-            curl -LO https://launchpad.net/ubuntu/+archive/primary/+files/linux-oem_4.13.0.orig.tar.gz
-            curl -LO https://launchpad.net/ubuntu/+archive/primary/+files/linux-oem_4.13.0-1032.36.diff.gz
+            wget -q https://github.com/torvalds/linux/archive/459e3a21535ae3c7a9a123650e54f5c882b8fcbf.tar.gz -O linux.tar.gz
+            mkdir linux
+            tar xzf linux.tar.gz -C linux --strip-components=1
+            cd linux
+            wget -O .config 'https://syzkaller.appspot.com/text?tag=KernelConfig&x=ef1b87b455c397cf'
+            cp .config .config.syzbot
 
-            dpkg-source -x linux-oem_4.13.0-1032.36.dsc
-            cd linux-oem-4.13.0
-
-            cp ../linux-config/.config .
-            head .config
 
             scripts/config --enable CONFIG_KCOV
             scripts/config --set-str CONFIG_LOCALVERSION "-kcov"
