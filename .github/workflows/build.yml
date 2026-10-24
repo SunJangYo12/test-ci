@@ -81,7 +81,7 @@ jobs:
 
 
             make olddefconfig
-            make -j4
+            make
 
             cp arch/x86/boot/bzImage ../out/
             cp vmlinux ../out/
