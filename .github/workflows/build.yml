@@ -18,10 +18,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build kernel di ubuntu:18.04
+      - name: Build kernel di ubuntu:20.04
         run: |
           mkdir -p out
-          docker run --rm -v "$PWD:/work" -w /work ubuntu:18.04 bash -euxc '
+          docker run --rm -v "$PWD:/work" -w /work ubuntu:20.04 bash -euxc '
             apt-get update
 
             DEBIAN_FRONTEND=noninteractive apt-get install -y gcc g++ build-essential bc bison flex libssl-dev libelf-dev libncurses5-dev xz-utils dwarves rsync git fakeroot dpkg-dev python3 perl kmod cpio wget busybox-static netcat-openbsd curl jq
