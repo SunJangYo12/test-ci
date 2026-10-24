@@ -80,8 +80,8 @@ jobs:
             scripts/config --disable CONFIG_RANDOMIZE_BASE     # KASLR, agar alamat konsisten di syzkaller
 
 
-            make olddefconfig
-            make
+            make CC="gcc-6 -fcf-protection=none" HOSTCC=gcc-6 olddefconfig
+            make CC="gcc-6 -fcf-protection=none" HOSTCC=gcc-6
 
             cp arch/x86/boot/bzImage ../out/
             cp vmlinux ../out/
