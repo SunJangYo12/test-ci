@@ -2,9 +2,9 @@ name: Build Linux container
 
 on:
   push:
-    branches: [compile-cont-kernel4.6]
+    branches: [compile-cont-kernel4.13]
   pull_request:
-    branches: [compile-cont-kernel4.6]
+    branches: [compile-cont-kernel4.13]
 
 
 permissions:
@@ -33,19 +33,12 @@ jobs:
 
             # ... langkah build kernel kamu di sini ...
 
-            curl -LO https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.6.7.tar.xz
-            curl -LO https://cdn.kernel.org/pub/linux/kernel/v4.x/patch-4.6.7.xz #patch hanya jika dari versi dibawah 4.6.7
-            #xzcat patch-4.6.7.xz | patch -p1 || true
+            curl -LO https://launchpad.net/ubuntu/+archive/primary/+files/linux-oem_4.13.0-1032.36.dsc
+            curl -LO https://launchpad.net/ubuntu/+archive/primary/+files/linux-oem_4.13.0.orig.tar.gz
+            curl -LO https://launchpad.net/ubuntu/+archive/primary/+files/linux-oem_4.13.0-1032.36.diff.gz
 
-            xz -d linux-4.6.7.tar.xz
-            tar xf linux-4.6.7.tar
-            mv patch-4.6.7.xz linux-4.6.7
-
-            cd linux-4.6.7
-
-
-            # patch tun/tap
-            sed -i "s/^\([[:space:]]*\)netif_rx_ni(skb);/\1local_bh_disable();\n\1netif_receive_skb(skb);\n\1local_bh_enable();/" drivers/net/tun.c
+            dpkg-source -x linux-oem_4.13.0-1032.36.dsc
+            cd linux-oem-4.13.0
 
             cp ../linux-config/.config .
             head .config
@@ -103,8 +96,8 @@ jobs:
       - name: Buat release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v4.6.7
-          name: v4.6.7
+          tag_name: v4.13.0
+          name: v4.13.0
           files: |
             out/bzImage
             out/vmlinux.xz
