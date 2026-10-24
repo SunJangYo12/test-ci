@@ -75,11 +75,8 @@ jobs:
             scripts/config --enable CONFIG_FAULT_INJECTION_DEBUG_FS
             scripts/config --disable CONFIG_RANDOMIZE_BASE     # KASLR, agar alamat konsisten di syzkaller
 
-            export HOSTCFLAGS="-Wno-error"
-            export KCFLAGS="-Wno-error"
-
-            make olddefconfig
-            make
+            HOSTCFLAGS="-Wno-error" KCFLAGS="-Wno-error" make olddefconfig
+            HOSTCFLAGS="-Wno-error" KCFLAGS="-Wno-error" make
 
             cp arch/x86/boot/bzImage ../out/
             cp vmlinux ../out/
