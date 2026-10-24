@@ -28,11 +28,12 @@ jobs:
 
             # ... langkah build kernel kamu di sini ...
 
-            wget -q https://github.com/torvalds/linux/archive/459e3a21535ae3c7a9a123650e54f5c882b8fcbf.tar.gz -O linux.tar.gz
+            curl -L -o linux.tar.gz https://github.com/torvalds/linux/archive/459e3a21535ae3c7a9a123650e54f5c882b8fcbf.tar.gz
             mkdir linux
             tar xzf linux.tar.gz -C linux --strip-components=1
+
             cd linux
-            wget -O .config 'https://syzkaller.appspot.com/text?tag=KernelConfig&x=ef1b87b455c397cf'
+            curl -L -o .config "https://syzkaller.appspot.com/text?tag=KernelConfig&x=ef1b87b455c397cf"
             cp .config .config.syzbot
 
 
