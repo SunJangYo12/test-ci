@@ -1,3 +1,17 @@
+# ci-boot-xubuntu22
+boot xubuntu di cloud dengan github ci
+```
+client:
+sudo apt update
+sudo apt install -y tigervnc-viewer
+
+curl -L -o cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+./cloudflared access tcp --hostname "$url" --url localhost:20024
+
+xtigervncviewer localhost:20024
+NOTE: password 1234
+```
+
 ```
  1098  rustup doc
  1099  exit
