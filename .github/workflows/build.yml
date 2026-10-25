@@ -54,12 +54,12 @@ jobs:
           CHAT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID: "7797309176"
         run: |
-          ./cloudflared tunnel --url http://localhost:6080 > tunnel.log 2>&1 &
+          ./cloudflared tunnel --no-autoupdate --url tcp://localhost:5900 > tunnel.log 2>&1 &
           sleep 10
           URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' tunnel.log | head -1)
 
           if [ -n "$URL" ]; then
-            MSG="[VNC] go browser: $URL/vnc.html"
+            MSG="[VNC] tiggervnc: $URL"
           else
             MSG="GAGAL vnc url"
           fi
