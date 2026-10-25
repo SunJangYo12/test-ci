@@ -1,82 +1,65 @@
-name: Listener shell
-# host: ./cloudflared access tcp --hostname https://geological-buyers-testing-fifty.trycloudflare.com --url localhost:20023
-# host: nc localhost 20023
-
-
-on:
-  push:
-    branches: [listen-nc]
-  pull_request:
-    branches: [listen-nc]
-
+name: xubuntu-vm
+on: workflow_dispatch
 
 jobs:
-  build:
+  vm:
     runs-on: ubuntu-latest
-    container: ubuntu:16.04
-
+    timeout-minutes: 360
     steps:
-      - name: Install dependencies
+      - name: Cek KVM dan pasang paket
         run: |
-          apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential bc bison flex libssl-dev libelf-dev libncurses-dev dwarves rsync git fakeroot dpkg-dev python3 perl kmod cpio wget busybox-static netcat-openbsd curl jq
+          ls -l /dev/kvm || echo "KVM TIDAK ADA (akan lambat)"
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+          sudo apt-get update
+          sudo apt-get install -y qemu-system-x86 qemu-utils novnc websockify socat
+          curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
+          chmod +x cloudflared
 
 
-      - name: Buka tunnel ke web UI
+      - name: Siapkan disk dan ISO
+        run: |
+          sudo chown $USER /mnt
+          cd /mnt
+          qemu-img create -f qcow2 xubuntu.qcow2 25G
+          wget -q -O xubuntu.iso https://cdimage.ubuntu.com/xubuntu/releases/22.04/release/xubuntu-22.04.5-desktop-amd64.iso
+
+      - name: Jalankan QEMU
+        env:
+          VNC_PASSWORD: "1234"
+        run: |
+          cd /mnt
+          nohup qemu-system-x86_64 \
+            -enable-kvm -cpu host -smp 4 -m 5G \
+            -machine q35 \
+            -drive file=xubuntu.qcow2,if=virtio \
+            -cdrom xubuntu.iso -boot d \
+            -netdev user,id=n0 -device virtio-net-pci,netdev=n0 \
+            -device virtio-vga -device qemu-xhci -device usb-tablet \
+            -monitor unix:/tmp/qemu-mon.sock,server,nowait \
+            -vnc 127.0.0.1:0,password=on > qemu.log 2>&1 &
+          sleep 5
+          echo "set_password vnc $VNC_PASSWORD" | socat - UNIX-CONNECT:/tmp/qemu-mon.sock
+          websockify -D --web=/usr/share/novnc 6080 127.0.0.1:5900
+
+      - name: Tunnel Cloudflare
         env:
           CHAT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID: "7797309176"
-
         run: |
-          curl -L -o cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
-          chmod +x cloudflared
-          nohup ./cloudflared tunnel --no-autoupdate --url tcp://127.0.0.1:20022 > tunnel.log 2>&1 &
-
-          URL=""
-          for i in $(seq 1 30); do
-            URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' tunnel.log | head -1)
-            [ -n "$URL" ] && break
-            sleep 2
-          done
+          ./cloudflared tunnel --url http://localhost:6080 > tunnel.log 2>&1 &
+          sleep 10
+          URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' tunnel.log | head -1)
 
           if [ -n "$URL" ]; then
-            MSG="NC Listener: $URL"
+            MSG="[VNC] go browser: $URL/vnc.html"
           else
-            MSG="GAGAL listener publik url"
+            MSG="GAGAL vnc url"
           fi
-
           curl -s "https://api.telegram.org/bot$CHAT_TOKEN/sendMessage" \
             -d chat_id="$CHAT_ID" --data-urlencode text="$MSG" > /dev/null
 
-          cd ~
-          git clone https://github.com/sunjangyo12/test-ci
-          cd test-ci
-          git checkout listen-nc
-          chmod +x ./bot.sh
-          nohup ./bot.sh "$CHAT_TOKEN" "$CHAT_ID" > ~/bot.log 2>&1 &
 
-
-
-
-
-      - name: Run nc listener
-        run: |
-          busybox nc -l -p 20022 -e /bin/sh -i &
-
-          sleep 18000 # 5jam
-
-
-      - name: Collect artifacts
-        run: |
-          mkdir -p output
-
-          cp ~/mylog.txt output/
-
-          tar czvf result.tar.gz \
-            -C output .
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: result
-          path: result.tar.gz
+          sleep 20000
