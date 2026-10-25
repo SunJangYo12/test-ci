@@ -1,5 +1,10 @@
 name: xubuntu-vm
-on: workflow_dispatch
+on:
+  push:
+    branches: [ci-boot-xubuntu22]
+  pull_request:
+    branches: [ci-boot-xubuntu22]
+
 
 jobs:
   vm:
