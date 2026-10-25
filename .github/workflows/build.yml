@@ -18,14 +18,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build kernel di ubuntu:20.04
+      - name: Build kernel di ubuntu:16.04
         run: |
           mkdir -p out
-          docker run --rm -v "$PWD:/work" -w /work ubuntu:20.04 bash -euxc '
+          docker run --rm -v "$PWD:/work" -w /work ubuntu:16.04 bash -euxc '
+            apt-get update
+            apt-get install -y software-properties-common
+            add-apt-repository -y ppa:ubuntu-toolchain-r/test
             apt-get update
 
-            DEBIAN_FRONTEND=noninteractive apt-get install -y gcc g++ build-essential bc bison flex libssl-dev libelf-dev libncurses5-dev xz-utils dwarves rsync git fakeroot dpkg-dev python3 perl kmod cpio wget busybox-static netcat-openbsd curl jq
+            DEBIAN_FRONTEND=noninteractive apt-get install -y gcc-6 g++-6 build-essential bc bison flex libssl-dev libelf-dev libncurses5-dev xz-utils dwarves rsync git fakeroot dpkg-dev python3 perl kmod cpio wget busybox-static netcat-openbsd curl jq
 
+            update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 100 --slave /usr/bin/g++ g++ /usr/bin/g++-6
 
             # ... langkah build kernel kamu di sini ...
 
@@ -76,8 +80,8 @@ jobs:
             scripts/config --disable CONFIG_RANDOMIZE_BASE     # KASLR, agar alamat konsisten di syzkaller
 
 
-            make CC="gcc-9 -fcf-protection=none" HOSTCC=gcc-9 olddefconfig
-            make CC="gcc-9 -fcf-protection=none" HOSTCC=gcc-9
+            make olddefconfig
+            make
 
             cp arch/x86/boot/bzImage ../out/
             cp vmlinux ../out/
