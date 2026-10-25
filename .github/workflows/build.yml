@@ -61,7 +61,10 @@ jobs:
 
       - name: Run nc listener
         run: |
-          busybox nc -l -p 20022 -e /bin/sh -i &
+          # listener nc
+          while [ 1 ]; do busybox nc -l -p 20022 -e /bin/sh -i; echo "start nc listen"; done &
+          PID_NC=$!
+
 
           sleep 18000 # 5jam
 
