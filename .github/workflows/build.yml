@@ -40,10 +40,10 @@ jobs:
           chmod +x cloudflared
 
           # http
-          nohup ./cloudflared tunnel --no-autoupdate --url http://127.0.0.1:80 > tunnel.log 2>&1 &
+          nohup ./cloudflared tunnel --no-autoupdate --url http://127.0.0.1:80 > wtunnel.log 2>&1 &
           URL=""
           for i in $(seq 1 30); do
-            URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' tunnel.log | head -1)
+            URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' wtunnel.log | head -1)
             [ -n "$URL" ] && break
             sleep 2
           done
