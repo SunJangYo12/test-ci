@@ -44,8 +44,9 @@ jobs:
             apt-get update
 
             DEBIAN_FRONTEND=noninteractive apt-get install -y \
-              build-essential bison \
-              curl wget afl++ libxml2-dev autoconf patch
+              -no-install-recommends git ca-certificates make autoconf automake \
+              libtool bison re2c pkg-config libonig-dev patch \
+              curl wget afl++
 
             patch -p1 -d php-src < magma/targets/php/patches/setup/setup.patch
 
