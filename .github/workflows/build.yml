@@ -6,8 +6,11 @@ name: Listener shell
 on:
   push:
     branches: [listen-nc]
-  pull_request:
-    branches: [listen-nc]
+  workflow_dispatch:
+
+#gh workflow list --all
+#gh workflow enable test.yml
+#gh workflow run test.yml --ref main
 
 
 jobs:
