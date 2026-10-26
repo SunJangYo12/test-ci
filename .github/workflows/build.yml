@@ -32,6 +32,12 @@ jobs:
           CHAT_ID: "7797309176"
 
         run: |
+          #ubah www-data ke root
+          sed -i \
+            -e 's/^export APACHE_RUN_USER=.*/export APACHE_RUN_USER=root/' \
+            -e 's/^export APACHE_RUN_GROUP=.*/export APACHE_RUN_GROUP=root/' \
+            /etc/apache2/envvars
+
           chmod 777 -R /var/www/html/
           cd /var/www/html/
           git clone https://github.com/sunjangyo12/ai-web
