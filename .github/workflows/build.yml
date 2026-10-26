@@ -39,7 +39,7 @@ jobs:
             apt-get update
 
             DEBIAN_FRONTEND=noninteractive apt-get install -y \
-              build-essential \
+              build-essential bison \
               curl wget afl++ libxml2-dev autoconf
 
             # ... langkah build kernel kamu di sini ...
