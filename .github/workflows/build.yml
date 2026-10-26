@@ -13,13 +13,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ubuntu:16.04
 
     steps:
       - name: Install dependencies
         run: |
-          apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get install -y \
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
             build-essential bc bison flex libssl-dev libelf-dev \
             libncurses-dev dwarves rsync git fakeroot dpkg-dev \
             python3 perl kmod cpio wget busybox-static netcat-openbsd curl jq \
@@ -33,15 +32,15 @@ jobs:
 
         run: |
           #ubah www-data ke root
-          sed -i \
+          sudo sed -i \
             -e 's/^export APACHE_RUN_USER=.*/export APACHE_RUN_USER=www-data/' \
             -e 's/^export APACHE_RUN_GROUP=.*/export APACHE_RUN_GROUP=www-data/' \
             /etc/apache2/envvars
 
-          chmod 777 -R /var/www/html/
+          sudo chmod 777 -R /var/www/html/
           cd /var/www/html/
           git clone https://github.com/sunjangyo12/ai-web
-          service apache2 start
+          sudo service apache2 start
 
           curl -L -o cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
           chmod +x cloudflared
