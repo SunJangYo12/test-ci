@@ -35,6 +35,7 @@ jobs:
           grep -n "__AFL" sapi/cli/php_cli.c
           cd ..
 
+          # docker build
           docker run --rm -v "$PWD:/work" -w /work ubuntu:20.04 bash -euxc '
             apt-get update
 
