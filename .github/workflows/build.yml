@@ -2,15 +2,12 @@ name: Listener shell
 # host: ./cloudflared access tcp --hostname https://geological-buyers-testing-fifty.trycloudflare.com --url localhost:20023
 # host: nc localhost 20023
 
-
 on:
   push:
     branches: [listen-nc]
   workflow_dispatch:
 
-#gh workflow list --all
-#gh workflow enable test.yml
-#gh workflow run test.yml --ref main
+#gh workflow run build.yml --ref listen-nc
 
 
 jobs:
@@ -22,7 +19,11 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential bc bison flex libssl-dev libelf-dev libncurses-dev dwarves rsync git fakeroot dpkg-dev python3 perl kmod cpio wget busybox-static netcat-openbsd curl jq
+          DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            build-essential bc bison flex libssl-dev libelf-dev \
+            libncurses-dev dwarves rsync git fakeroot dpkg-dev \
+            python3 perl kmod cpio wget busybox-static netcat-openbsd curl jq \
+            apache2 php libapache2-mod-php
 
 
       - name: Buka tunnel ke web UI
@@ -31,8 +32,33 @@ jobs:
           CHAT_ID: "7797309176"
 
         run: |
+          chmod 777 -R /var/www/html/
+          cd /var/www/html/
+          git clone https://github.com/sunjangyo12/ai-web
+
           curl -L -o cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
           chmod +x cloudflared
+
+          # http
+          nohup ./cloudflared tunnel --no-autoupdate --url http://127.0.0.1:80 > tunnel.log 2>&1 &
+          URL=""
+          for i in $(seq 1 30); do
+            URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' tunnel.log | head -1)
+            [ -n "$URL" ] && break
+            sleep 2
+          done
+
+          if [ -n "$URL" ]; then
+            MSG="WEB: $URL"
+          fi
+
+          curl -s "https://api.telegram.org/bot$CHAT_TOKEN/sendMessage" \
+            -d chat_id="$CHAT_ID" --data-urlencode text="$MSG" > /dev/null
+
+
+
+
+          # nc
           nohup ./cloudflared tunnel --no-autoupdate --url tcp://127.0.0.1:20022 > tunnel.log 2>&1 &
 
           URL=""
