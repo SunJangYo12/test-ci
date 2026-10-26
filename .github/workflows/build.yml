@@ -34,8 +34,8 @@ jobs:
         run: |
           #ubah www-data ke root
           sed -i \
-            -e 's/^export APACHE_RUN_USER=.*/export APACHE_RUN_USER=root/' \
-            -e 's/^export APACHE_RUN_GROUP=.*/export APACHE_RUN_GROUP=root/' \
+            -e 's/^export APACHE_RUN_USER=.*/export APACHE_RUN_USER=runner/' \
+            -e 's/^export APACHE_RUN_GROUP=.*/export APACHE_RUN_GROUP=runner/' \
             /etc/apache2/envvars
 
           chmod 777 -R /var/www/html/
