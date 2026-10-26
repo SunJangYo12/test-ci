@@ -10,6 +10,10 @@ on:
 permissions:
   contents: write   # wajib untuk membuat release
 
+env:
+  MAGMA_TAG: v1.2.1
+  # commit yang sama dengan magma/targets/php/fetch.sh
+  PHP_COMMIT: bc39abe8c3c492e29bc5d60ca58442040bbf063b
 
 jobs:
   build:
@@ -18,22 +22,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Fetch php-src (commit Magma) dan setup.patch Magma
+        run: |
+          git clone --no-checkout https://github.com/php/php-src.git php-src
+          git -C php-src checkout "$PHP_COMMIT"
+          git clone --depth 1 --branch "$MAGMA_TAG" https://github.com/HexHive/magma.git magma
+
+
       - name: Build kernel di ubuntu:20.04
         run: |
           mkdir -p out
-
-          curl -L -o php.tar.gz https://github.com/php/php-src/archive/php-7.2.11.tar.gz
-          mkdir php7
-          tar xzf php.tar.gz -C php7 --strip-components=1
-
-          # patch
-          cd php7
-          PAT='if (zend_eval_string_ex(exec_direct, NULL, "Command line code", 1) == FAILURE) {'
-          grep -qF "$PAT" sapi/cli/php_cli.c || { echo "::error::pola di php_cli.c tidak ditemukan, sesuaikan patch"; exit 1; }
-
-          sed -i "s|${PAT}|__AFL_INIT(); while (__AFL_LOOP(10000)) ${PAT}|" sapi/cli/php_cli.c
-          grep -n "__AFL" sapi/cli/php_cli.c
-          cd ..
 
           # docker build
           docker run --rm -v "$PWD:/work" -w /work ubuntu:20.04 bash -euxc '
@@ -41,22 +39,36 @@ jobs:
 
             DEBIAN_FRONTEND=noninteractive apt-get install -y \
               build-essential bison \
-              curl wget afl++ libxml2-dev autoconf
+              curl wget afl++ libxml2-dev autoconf patch libonig-dev
 
-            # ... langkah build kernel kamu di sini ...
-            cd php7
+            patch -p1 -d php-src < magma/targets/php/patches/setup/setup.patch
+
+            # Cari driver AFL++
+            DRV=$(find / -name libAFLDriver.a 2>/dev/null | head -1)
+            [ -n "$DRV" ] || { echo "::error::libAFLDriver.a tidak ditemukan"; exit 1; }
+
+            cd php-src
+            export AFL_USE_ASAN=1
+            export AFL_LLVM_INSTRUMENT="CLASSIC"
+            export CC=afl-clang-fast CXX=afl-clang-fast++
+            # sama seperti Magma: object-size sanitizer tidak cocok dengan union zend_function
+            export EXTRA_CFLAGS="-O1 -g -fno-sanitize=object-size"
+            export EXTRA_CXXFLAGS="$EXTRA_CFLAGS"
 
             # configure
             ./buildconf --force
-            CC=afl-clang-fast CXX=afl-clang-fast++ ./configure
+            LIB_FUZZING_ENGINE="$DRV" ./configure \
+              --disable-all --enable-option-checking=fatal \
+              --enable-fuzzer --enable-exif --enable-phar --enable-mbstring \
+              --without-pcre-jit --disable-phpdbg --disable-cgi --with-pic
 
             # make
-            AFL_USE_ASAN=1 make -j4
-
+            make -j"$(nproc)"
+            ls -l sapi/fuzzer/php-fuzz-* sapi/cli/php
 
             # copy result
             cd ..
-            cp -R php7 out/
+            cp -R php-src out/
           '
 
       - name: Kompres
@@ -68,8 +80,8 @@ jobs:
       - name: Buat release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: php-7.2.11
-          name: php-7.2.11
+          tag_name: php-magma
+          name: php-magma
           files: |
             result.tar.gz
 
