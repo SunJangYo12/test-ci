@@ -33,13 +33,15 @@ jobs:
         run: |
           #ubah www-data ke root
           sudo sed -i \
-            -e 's/^export APACHE_RUN_USER=.*/export APACHE_RUN_USER=www-data/' \
-            -e 's/^export APACHE_RUN_GROUP=.*/export APACHE_RUN_GROUP=www-data/' \
+            -e 's/^export APACHE_RUN_USER=.*/export APACHE_RUN_USER=runner/' \
+            -e 's/^export APACHE_RUN_GROUP=.*/export APACHE_RUN_GROUP=runner/' \
             /etc/apache2/envvars
 
           sudo chmod 777 -R /var/www/html/
           cd /var/www/html/
           git clone https://github.com/sunjangyo12/ai-web
+          echo 1 > ai-web/settings.txt #php8 fix
+
           sudo service apache2 start
 
           curl -L -o cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
