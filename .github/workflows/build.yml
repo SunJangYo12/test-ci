@@ -21,6 +21,20 @@ jobs:
       - name: Build kernel di ubuntu:20.04
         run: |
           mkdir -p out
+
+          curl -L -o php.tar.gz https://github.com/php/php-src/archive/php-7.2.11.tar.gz
+          mkdir php7
+          tar xzf php.tar.gz -C php7 --strip-components=1
+
+          # patch
+          cd php7
+          PAT='if (zend_eval_string_ex(exec_direct, NULL, "Command line code", 1) == FAILURE) {'
+          grep -qF "$PAT" sapi/cli/php_cli.c || { echo "::error::pola di php_cli.c tidak ditemukan, sesuaikan patch"; exit 1; }
+
+          sed -i "s|${PAT}|__AFL_INIT(); while (__AFL_LOOP(10000)) ${PAT}|" sapi/cli/php_cli.c
+          grep -n "__AFL" sapi/cli/php_cli.c
+          cd ..
+
           docker run --rm -v "$PWD:/work" -w /work ubuntu:20.04 bash -euxc '
             apt-get update
 
@@ -29,18 +43,7 @@ jobs:
               curl wget afl++ libxml2-dev autoconf
 
             # ... langkah build kernel kamu di sini ...
-
-            curl -L -o php.tar.gz https://github.com/php/php-src/archive/php-7.2.11.tar.gz
-            mkdir php7
-            tar xzf php.tar.gz -C php7 --strip-components=1
-
-            # patch
             cd php7
-            PAT='if (zend_eval_string_ex(exec_direct, NULL, "Command line code", 1) == FAILURE) {'
-            grep -qF "$PAT" sapi/cli/php_cli.c || { echo "::error::pola di php_cli.c tidak ditemukan, sesuaikan patch"; exit 1; }
-
-            sed -i "s|${PAT}|__AFL_INIT(); while (__AFL_LOOP(10000)) ${PAT}|" sapi/cli/php_cli.c
-            grep -n "__AFL" sapi/cli/php_cli.c
 
             # configure
             ./buildconf --force
