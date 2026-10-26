@@ -1,10 +1,10 @@
-name: Build Linux container
+name: Build Program container
 
 on:
   push:
-    branches: [compile-cont-kernel5.1.0-rc7]
+    branches: [compile-cont-php]
   pull_request:
-    branches: [compile-cont-kernel5.1.0-rc7]
+    branches: [compile-cont-php]
 
 
 permissions:
@@ -24,77 +24,50 @@ jobs:
           docker run --rm -v "$PWD:/work" -w /work ubuntu:20.04 bash -euxc '
             apt-get update
 
-            DEBIAN_FRONTEND=noninteractive apt-get install -y gcc g++ build-essential bc bison flex libssl-dev libelf-dev libncurses5-dev xz-utils dwarves rsync git fakeroot dpkg-dev python3 perl kmod cpio wget busybox-static netcat-openbsd curl jq
+            DEBIAN_FRONTEND=noninteractive apt-get install -y \
+              build-essential \
+              curl wget afl++ libxml2-dev autoconf
 
             # ... langkah build kernel kamu di sini ...
 
-            curl -L -o linux.tar.gz https://github.com/torvalds/linux/archive/459e3a21535ae3c7a9a123650e54f5c882b8fcbf.tar.gz
-            mkdir linux
-            tar xzf linux.tar.gz -C linux --strip-components=1
+            curl -L -o php.tar.gz https://github.com/php/php-src/archive/php-7.2.11.tar.gz
+            mkdir php7
+            tar xzf php.tar.gz -C php7 --strip-components=1
 
-            cd linux
-            curl -L -o .config "https://syzkaller.appspot.com/text?tag=KernelConfig&x=ef1b87b455c397cf"
-            cp .config .config.syzbot
+            # patch
+            cd php7
+            PAT='if (zend_eval_string_ex(exec_direct, NULL, "Command line code", 1) == FAILURE) {'
+            grep -qF "$PAT" sapi/cli/php_cli.c || { echo "::error::pola di php_cli.c tidak ditemukan, sesuaikan patch"; exit 1; }
+
+            sed -i "s|${PAT}|__AFL_INIT(); while (__AFL_LOOP(10000)) ${PAT}|" sapi/cli/php_cli.c
+            grep -n "__AFL" sapi/cli/php_cli.c
+
+            # configure
+            ./buildconf --force
+            CC=afl-clang-fast CXX=afl-clang-fast++ ./configure
+
+            # make
+            AFL_USE_ASAN=1 make -j4
 
 
-            scripts/config --enable CONFIG_KCOV
-            scripts/config --set-str CONFIG_LOCALVERSION "-kcov"
-
-            # NIC built-in supaya ada eth0 tanpa modul/initramfs khusus
-            scripts/config --enable CONFIG_NETDEVICES
-            scripts/config --enable CONFIG_ETHERNET
-            scripts/config --enable CONFIG_NET_VENDOR_INTEL
-            scripts/config --enable CONFIG_E1000
-            scripts/config --enable CONFIG_E1000E
-            scripts/config --enable CONFIG_VIRTIO_MENU
-            scripts/config --enable CONFIG_VIRTIO_PCI
-            scripts/config --enable CONFIG_VIRTIO_NET
-
-            # KASAN inti
-            scripts/config --enable CONFIG_KASAN
-            scripts/config --enable CONFIG_KASAN_INLINE        # lebih cepat dari OUTLINE, tapi build lebih besar
-
-            # Dependensi / pendukung
-            scripts/config --enable CONFIG_SLUB
-            scripts/config --enable CONFIG_SLUB_DEBUG
-            scripts/config --enable CONFIG_DEBUG_KERNEL
-            scripts/config --enable CONFIG_DEBUG_INFO
-            scripts/config --enable CONFIG_DEBUG_INFO_DWARF4   # atau DWARF5, sesuai toolchain
-            scripts/config --enable CONFIG_DEBUG_FS
-
-            # Rekomendasi syzkaller (opsional tapi disarankan)
-            scripts/config --enable CONFIG_PANIC_ON_OOPS
-            scripts/config --set-val CONFIG_PANIC_TIMEOUT 1
-            scripts/config --enable CONFIG_BUG_ON_DATA_CORRUPTION
-            scripts/config --enable CONFIG_DEBUG_LIST
-            scripts/config --enable CONFIG_FAULT_INJECTION
-            scripts/config --enable CONFIG_FAILSLAB
-            scripts/config --enable CONFIG_FAIL_PAGE_ALLOC
-            scripts/config --enable CONFIG_FAULT_INJECTION_DEBUG_FS
-            scripts/config --disable CONFIG_RANDOMIZE_BASE     # KASLR, agar alamat konsisten di syzkaller
-
-            make CC="gcc-9 -fcf-protection=none" HOSTCC=gcc-9 olddefconfig
-            make CC="gcc-9 -fcf-protection=none" HOSTCC=gcc-9
-
-            cp arch/x86/boot/bzImage ../out/
-            cp vmlinux ../out/
-            cp .config ../out/
+            # copy result
+            cd ..
+            cp -R php7 out/
           '
 
-      - name: Kompres vmlinux (hemat ukuran)
+      - name: Kompres
         run: |
           sudo chown -R $USER out
-          sudo xz -T0 -9 out/vmlinux
+          tar czvf result.tar.gz \
+            -C out .
 
       - name: Buat release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v5.1.0-rc7
-          name: v5.1.0-rc7
+          tag_name: php-7.2.11
+          name: php-7.2.11
           files: |
-            out/bzImage
-            out/vmlinux.xz
-            out/.config
+            result.tar.gz
 
 
 
