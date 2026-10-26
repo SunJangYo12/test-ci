@@ -44,7 +44,7 @@ jobs:
             apt-get update
 
             DEBIAN_FRONTEND=noninteractive apt-get install -y \
-              -no-install-recommends git ca-certificates make autoconf automake \
+              --no-install-recommends git ca-certificates make autoconf automake \
               libtool bison re2c pkg-config libonig-dev patch \
               curl wget afl++
 
