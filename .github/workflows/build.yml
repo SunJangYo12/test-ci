@@ -14,6 +14,7 @@ env:
   MAGMA_TAG: v1.2.1
   # commit yang sama dengan magma/targets/php/fetch.sh
   PHP_COMMIT: bc39abe8c3c492e29bc5d60ca58442040bbf063b
+  ONIGURUMA_TAG: 7c190e81397b7c37ec0e899df10be04a8eec5d4b
 
 jobs:
   build:
@@ -26,10 +27,15 @@ jobs:
         run: |
           git clone --no-checkout https://github.com/php/php-src.git php-src
           git -C php-src checkout "$PHP_COMMIT"
+
           git clone --depth 1 --branch "$MAGMA_TAG" https://github.com/HexHive/magma.git magma
 
+          git clone --no-checkout https://github.com/kkos/oniguruma.git oniguruma
+          git -C oniguruma checkout "$ONIGURUMA_TAG"
 
-      - name: Build kernel di ubuntu:20.04
+
+
+      - name: Build PHP di ubuntu:20.04
         run: |
           mkdir -p out
 
@@ -39,28 +45,33 @@ jobs:
 
             DEBIAN_FRONTEND=noninteractive apt-get install -y \
               build-essential bison \
-              curl wget afl++ libxml2-dev autoconf patch libonig-dev
+              curl wget afl++ libxml2-dev autoconf patch
 
             patch -p1 -d php-src < magma/targets/php/patches/setup/setup.patch
 
-            # Cari driver AFL++
-            DRV=$(find / -name libAFLDriver.a 2>/dev/null | head -1)
-            [ -n "$DRV" ] || { echo "::error::libAFLDriver.a tidak ditemukan"; exit 1; }
-
             cd php-src
+            export ONIG_CFLAGS="-I$PWD/oniguruma/src"
+            export ONIG_LIBS="-L$PWD/oniguruma/src/.libs -l:libonig.a"
             export AFL_USE_ASAN=1
             export AFL_LLVM_INSTRUMENT="CLASSIC"
             export CC=afl-clang-fast CXX=afl-clang-fast++
             # sama seperti Magma: object-size sanitizer tidak cocok dengan union zend_function
-            export EXTRA_CFLAGS="-O1 -g -fno-sanitize=object-size"
-            export EXTRA_CXXFLAGS="$EXTRA_CFLAGS"
+            export CFLAGS="-O1 -g -fno-sanitize=object-size"
+            export CXXFLAGS="$CFLAGS"
 
             # configure
             ./buildconf --force
-            LIB_FUZZING_ENGINE="$DRV" ./configure \
+            LIB_FUZZING_ENGINE="-Wall" ./configure \
               --disable-all --enable-option-checking=fatal \
               --enable-fuzzer --enable-exif --enable-phar --enable-mbstring \
               --without-pcre-jit --disable-phpdbg --disable-cgi --with-pic
+
+            # build oniguruma and link statically
+            pushd oniguruma
+            autoreconf -vfi
+            ./configure --disable-shared
+            make -j$(nproc)
+            popd
 
             # make
             make -j"$(nproc)"
