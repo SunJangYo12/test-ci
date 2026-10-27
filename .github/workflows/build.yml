@@ -54,7 +54,7 @@ jobs:
             ../codeql/codeql database bundle ../aircrack-db --output=../aircrack-db.zip
 
             ../codeql/codeql database analyze ../aircrack-db \
-              codeql/cpp-queries:codeql-suites/cpp-security-extended.qls \
+              ../codeql/codeql/cpp-queries:codeql-suites/cpp-security-extended.qls \
               --format=sarif-latest --output=../aircrack-results.sarif --threads=0
 
             # copy result
