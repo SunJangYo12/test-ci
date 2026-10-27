@@ -35,16 +35,16 @@ jobs:
 
 
 
-      - name: Build PHP di ubuntu:20.04
+      - name: Build PHP di ubuntu:22.04
         run: |
           mkdir -p out
 
           # docker build
-          docker run --rm -v "$PWD:/work" -w /work ubuntu:20.04 bash -euxc '
+          docker run --rm -v "$PWD:/work" -w /work ubuntu:22.04 bash -euxc '
             apt-get update
 
             DEBIAN_FRONTEND=noninteractive apt-get install -y \
-              --no-install-recommends build-essential git ca-certificates make autoconf automake \
+              --no-install-recommends git ca-certificates make autoconf automake \
               libtool bison re2c pkg-config libonig-dev patch \
               curl wget afl++
 
@@ -55,7 +55,7 @@ jobs:
             export ONIG_LIBS="-L$PWD/oniguruma/src/.libs -l:libonig.a"
             export AFL_USE_ASAN=1
             export AFL_LLVM_INSTRUMENT="CLASSIC"
-            export CC=afl-clang CXX=afl-clang++
+            export CC=afl-clang-fast CXX=afl-clang-fast++
             # sama seperti Magma: object-size sanitizer tidak cocok dengan union zend_function
             export CFLAGS="-O1 -g -fno-sanitize=object-size"
             export CXXFLAGS="$CFLAGS"
