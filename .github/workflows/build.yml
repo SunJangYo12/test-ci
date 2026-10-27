@@ -51,7 +51,6 @@ jobs:
               --command="make -j$(nproc)"
 
             echo "=========== done dump database ================"
-            ../codeql/codeql database info ../aircrack-db
             ../codeql/codeql database bundle ../aircrack-db --output=../aircrack-db.zip
             # copy result
             cd ..
