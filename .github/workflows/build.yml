@@ -2,9 +2,9 @@ name: Build Program container
 
 on:
   push:
-    branches: [compile-cont-php]
+    branches: [codeql-cont-aircrack]
   pull_request:
-    branches: [compile-cont-php]
+    branches: [codeql-cont-aircrack]
 
 
 permissions:
@@ -12,9 +12,6 @@ permissions:
 
 env:
   MAGMA_TAG: v1.2.1
-  # commit yang sama dengan magma/targets/php/fetch.sh
-  PHP_COMMIT: bc39abe8c3c492e29bc5d60ca58442040bbf063b
-  ONIGURUMA_TAG: 7c190e81397b7c37ec0e899df10be04a8eec5d4b
 
 jobs:
   build:
@@ -23,64 +20,42 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch php-src (commit Magma) dan setup.patch Magma
+      - name: Download codeql
         run: |
-          git clone --no-checkout https://github.com/php/php-src.git php-src
-          git -C php-src checkout "$PHP_COMMIT"
-
-          git clone --depth 1 --branch "$MAGMA_TAG" https://github.com/HexHive/magma.git magma
-
-          git clone --no-checkout https://github.com/kkos/oniguruma.git oniguruma
-          git -C oniguruma checkout "$ONIGURUMA_TAG"
+          wget https://github.com/github/codeql-cli-binaries/releases/download/v2.23.9/codeql-linux64.zip
+          unzip codeql-linux64.zip
 
 
-
-      - name: Build PHP di ubuntu:20.04
+      - name: Dump database aircrack-ng
         run: |
           mkdir -p out
+          git clone https://github.com/aircrack-ng/aircrack-ng.git
 
           # docker build
           docker run --rm -v "$PWD:/work" -w /work ubuntu:20.04 bash -euxc '
             apt-get update
 
-            DEBIAN_FRONTEND=noninteractive apt-get install -y \
-              --no-install-recommends git ca-certificates make autoconf automake \
-              libtool bison re2c pkg-config libonig-dev patch \
-              curl wget afl++ llvm clang
+            DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential autoconf automake libtool pkg-config \
+              libssl-dev libnl-3-dev libnl-genl-3-dev libpcap-dev libsqlite3-dev \
+              libpcre2-dev zlib1g-dev ethtool
 
-            patch -p1 -d php-src < magma/targets/php/patches/setup/setup.patch
+            cd aircrack-ng
+            autoreconf -i
+            ./configure
+            make clean
 
-            cd php-src
-            export ONIG_CFLAGS="-I$PWD/oniguruma/src"
-            export ONIG_LIBS="-L$PWD/oniguruma/src/.libs -l:libonig.a"
-            export AFL_USE_ASAN=1
-            export AFL_LLVM_INSTRUMENT="CLASSIC"
-            export CC=afl-clang-fast CXX=afl-clang-fast++
-            # sama seperti Magma: object-size sanitizer tidak cocok dengan union zend_function
-            export CFLAGS="-O1 -g -fno-sanitize=object-size"
-            export CXXFLAGS="$CFLAGS"
+            echo "=========== start dump database ================"
+            ./codeql/codeql database create ../aircrack-db \
+              --language=cpp \
+              --source-root=. \
+              --command="make -j$(nproc)"
 
-            # configure
-            ./buildconf --force
-            LIB_FUZZING_ENGINE="-Wall" ./configure \
-              --disable-all --enable-option-checking=fatal \
-              --enable-fuzzer --enable-exif --enable-phar --enable-mbstring \
-              --without-pcre-jit --disable-phpdbg --disable-cgi --with-pic
-
-            # build oniguruma and link statically
-            pushd oniguruma
-            autoreconf -vfi
-            ./configure --disable-shared
-            make -j$(nproc)
-            popd
-
-            # make
-            make -j"$(nproc)"
-            ls -l sapi/fuzzer/php-fuzz-* sapi/cli/php
-
+            echo "=========== done dump database ================"
+            ./codeql/codeql database info ../aircrack-db
+            ./codeql/codeql database bundle ../aircrack-db --output=../aircrack-db.zip
             # copy result
             cd ..
-            cp -R php-src out/
+            cp -R aircrack-db.zip out/
           '
 
       - name: Kompres
@@ -92,8 +67,8 @@ jobs:
       - name: Buat release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: php-magma
-          name: php-magma
+          tag_name: aircrack-db
+          name: aircrack-db
           files: |
             result.tar.gz
 
