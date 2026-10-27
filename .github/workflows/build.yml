@@ -39,22 +39,24 @@ jobs:
               libssl-dev libnl-3-dev libnl-genl-3-dev libpcap-dev libsqlite3-dev \
               libpcre2-dev zlib1g-dev ethtool
 
+            export PATH="codeql:$PATH"
+
             cd aircrack-ng
             autoreconf -i
             ./configure
             make clean
 
             echo "=========== start dump database ================"
-            ../codeql/codeql database create ../aircrack-db \
+            codeql database create ../aircrack-db \
               --language=cpp \
               --source-root=. \
               --command="make -j$(nproc)"
 
             echo "=========== done dump database ================"
-            ../codeql/codeql database bundle ../aircrack-db --output=../aircrack-db.zip
+            codeql database bundle ../aircrack-db --output=../aircrack-db.zip
 
-            ../codeql/codeql database analyze ../aircrack-db \
-              ../codeql/codeql/cpp-queries:codeql-suites/cpp-security-extended.qls \
+            codeql database analyze ../aircrack-db \
+              codeql/cpp-queries:codeql-suites/cpp-security-extended.qls \
               --format=sarif-latest --output=../aircrack-results.sarif --threads=0
 
             # copy result
