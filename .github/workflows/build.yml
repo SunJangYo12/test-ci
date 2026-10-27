@@ -39,11 +39,7 @@ jobs:
               libssl-dev libnl-3-dev libnl-genl-3-dev libpcap-dev libsqlite3-dev \
               libpcre2-dev zlib1g-dev ethtool
 
-            pwd
-            ls -la
-            ls codeql
-            echo "zzzzzzzzzzzzzzzzz"
-            export PATH="codeql:$PATH"
+            export PATH="`pwd`/codeql:$PATH"
 
             cd aircrack-ng
             autoreconf -i
