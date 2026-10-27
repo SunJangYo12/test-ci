@@ -20,11 +20,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+
       - name: Download codeql
         run: |
-          wget https://github.com/github/codeql-cli-binaries/releases/download/v2.23.9/codeql-linux64.zip
-          unzip codeql-linux64.zip
-
+          wget https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.23.9/codeql-bundle-linux64.tar.gz
+          tar xzf codeql-bundle-linux64.tar.gz
 
       - name: Dump database aircrack-ng
         run: |
