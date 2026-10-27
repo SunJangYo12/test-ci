@@ -35,18 +35,18 @@ jobs:
 
 
 
-      - name: Build PHP di ubuntu:22.04
+      - name: Build PHP di ubuntu:20.04
         run: |
           mkdir -p out
 
           # docker build
-          docker run --rm -v "$PWD:/work" -w /work ubuntu:22.04 bash -euxc '
+          docker run --rm -v "$PWD:/work" -w /work ubuntu:20.04 bash -euxc '
             apt-get update
 
             DEBIAN_FRONTEND=noninteractive apt-get install -y \
               --no-install-recommends git ca-certificates make autoconf automake \
               libtool bison re2c pkg-config libonig-dev patch \
-              curl wget afl++
+              curl wget afl++ llvm clang
 
             patch -p1 -d php-src < magma/targets/php/patches/setup/setup.patch
 
