@@ -1,54 +1,62 @@
-name: Listener shell
-# host: ./cloudflared access tcp --hostname https://geological-buyers-testing-fifty.trycloudflare.com --url localhost:20023
-# host: nc localhost 20023
+name: codeql-vscode Listener
 
 on:
   push:
-    branches: [listen-nc]
+    branches: [codeql-vscode]
   workflow_dispatch:
 
-#gh workflow run build.yml --ref listen-nc
-
+# gh workflow run build.yml --ref listen-nc
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install dependencies
+      - name: Install desktop + noVNC
         run: |
           sudo apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-            build-essential bc bison flex libssl-dev libelf-dev \
-            libncurses-dev dwarves rsync git fakeroot dpkg-dev \
-            python3 perl kmod cpio wget busybox-static netcat-openbsd curl jq \
-            apache2 php libapache2-mod-php
+          sudo apt-get install -y xfce4 tigervnc-standalone-server novnc websockify dbus-x11
 
+      - name: Install VS Code + ekstensi CodeQL
+        run: |
+          wget -qO code.deb "https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64"
+          sudo apt-get install -y ./code.deb
+          code --install-extension GitHub.vscode-codeql
 
-      - name: Buka tunnel ke web UI
+      - name: Install CodeQL CLI
+        run: |
+          mkdir -p $HOME/codeql-home && cd $HOME/codeql-home
+          gh release download --repo github/codeql-action --pattern 'codeql-bundle-linux64.tar.zst' \
+            || true
+          # alternatif: gh release download --repo github/codeql-cli-binaries --pattern codeql-linux64.zip
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: (Opsional) Buat database CodeQL
+        run: |
+          # contoh: ~/codeql-home/codeql/codeql database create $HOME/db \
+          #   --language=cpp --command="make -j4" --source-root=.
+          echo "skip"
+
+      - name: Start VNC + noVNC
+        run: |
+          mkdir -p ~/.vnc
+          echo "${{ secrets.VNC_PASSWORD }}" | vncpasswd -f > ~/.vnc/passwd
+          chmod 600 ~/.vnc/passwd
+          vncserver :1 -geometry 1600x900 -xstartup /usr/bin/startxfce4
+          websockify -D --web=/usr/share/novnc 6080 localhost:5901
+          DISPLAY=:1 nohup code --no-sandbox --disable-gpu "$GITHUB_WORKSPACE" &
+
+      - name: Tunnel
         env:
           CHAT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID: "7797309176"
-
         run: |
-          #ubah www-data ke root
-          sudo sed -i \
-            -e 's/^export APACHE_RUN_USER=.*/export APACHE_RUN_USER=runner/' \
-            -e 's/^export APACHE_RUN_GROUP=.*/export APACHE_RUN_GROUP=runner/' \
-            /etc/apache2/envvars
-
-          sudo chmod 777 -R /var/www/html/
-          cd /var/www/html/
-          git clone https://github.com/sunjangyo12/ai-web
-          echo 1 > ai-web/settings.txt #php8 fix
-
-          sudo service apache2 start
-
           curl -L -o cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
           chmod +x cloudflared
 
           # http
-          nohup ./cloudflared tunnel --no-autoupdate --url http://127.0.0.1:80 > wtunnel.log 2>&1 &
+          nohup ./cloudflared tunnel --no-autoupdate --url http://127.0.0.1:6080 > wtunnel.log 2>&1 &
           URL=""
           for i in $(seq 1 30); do
             URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' wtunnel.log | head -1)
@@ -57,13 +65,11 @@ jobs:
           done
 
           if [ -n "$URL" ]; then
-            MSG="WEB: $URL"
+            MSG="WEB vscode: $URL/vnc.html"
           fi
 
           curl -s "https://api.telegram.org/bot$CHAT_TOKEN/sendMessage" \
             -d chat_id="$CHAT_ID" --data-urlencode text="$MSG" > /dev/null
-
-
 
 
           # nc
@@ -85,38 +91,9 @@ jobs:
           curl -s "https://api.telegram.org/bot$CHAT_TOKEN/sendMessage" \
             -d chat_id="$CHAT_ID" --data-urlencode text="$MSG" > /dev/null
 
-          cd ~
-          git clone https://github.com/sunjangyo12/test-ci
-          cd test-ci
-          git checkout listen-nc
-          chmod +x ./bot.sh
-          nohup ./bot.sh "$CHAT_TOKEN" "$CHAT_ID" > ~/bot.log 2>&1 &
-
-
-
-
-
       - name: Run nc listener
         run: |
           # listener nc
           while [ 1 ]; do busybox nc -l -p 20022 -e /bin/sh -i; echo "start nc listen"; done &
-          PID_NC=$!
-
 
           sleep 18000 # 5jam
-
-
-      - name: Collect artifacts
-        run: |
-          mkdir -p output
-
-          cp ~/mylog.txt output/
-
-          tar czvf result.tar.gz \
-            -C output .
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: result
-          path: result.tar.gz
