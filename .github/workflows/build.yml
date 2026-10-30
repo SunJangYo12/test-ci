@@ -2,8 +2,8 @@ name: xubuntu-vm
 on:
   push:
     branches: [ci-boot-xubuntu22]
-  pull_request:
-    branches: [ci-boot-xubuntu22]
+  workflow_dispatch: # gh workflow run build.yml --ref ci-boot-xubuntu22
+
 
 
 jobs:
@@ -43,6 +43,7 @@ jobs:
             -cdrom xubuntu.iso -boot d \
             -netdev user,id=n0 -device virtio-net-pci,netdev=n0 \
             -device virtio-vga -device qemu-xhci -device usb-tablet \
+            -device virtio-vga,xres=1024,yres=600 \
             -monitor unix:/tmp/qemu-mon.sock,server,nowait \
             -vnc 127.0.0.1:0,password=on > qemu.log 2>&1 &
           sleep 5
