@@ -42,8 +42,7 @@ jobs:
             -drive file=xubuntu.qcow2,if=virtio \
             -cdrom xubuntu.iso -boot d \
             -netdev user,id=n0 -device virtio-net-pci,netdev=n0 \
-            -device virtio-vga -device qemu-xhci -device usb-tablet \
-            -device virtio-vga,xres=1024,yres=600 \
+            -device virtio-vga,xres=1024,yres=600 -device qemu-xhci -device usb-tablet \
             -monitor unix:/tmp/qemu-mon.sock,server,nowait \
             -vnc 127.0.0.1:0,password=on > qemu.log 2>&1 &
           sleep 5
