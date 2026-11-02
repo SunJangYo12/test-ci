@@ -30,7 +30,7 @@ jobs:
           sudo chown $USER /mnt
           cd /mnt
           qemu-img create -f qcow2 xubuntu.qcow2 25G
-          wget -q -O xubuntu.iso https://releases.ubuntu.com/22.04.5/ubuntu-22.04.5-desktop-amd64.iso
+          wget -q -O xubuntu.iso https://cdimage.ubuntu.com/xubuntu/releases/22.04/release/xubuntu-22.04.5-desktop-amd64.iso
 
       - name: Jalankan QEMU
         env:
