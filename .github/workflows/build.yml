@@ -12,10 +12,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install desktop + noVNC
+      - name: Install desktop + noVNC + ngrok
         run: |
           sudo apt-get update
-          sudo apt-get install -y xfce4 tigervnc-standalone-server novnc websockify dbus-x11
+          sudo apt-get install -y xfce4 tigervnc-standalone-server novnc websockify dbus-x11 jq netcat-openbsd
+          curl -sSL https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz | sudo tar -xz -C /usr/local/bin
+          ngrok version
 
       - name: Install VS Code + ekstensi CodeQL
         run: |
@@ -47,53 +49,56 @@ jobs:
           websockify -D --web=/usr/share/novnc 6080 localhost:5901
           DISPLAY=:1 nohup code --no-sandbox --disable-gpu "$GITHUB_WORKSPACE" &
 
-      - name: Tunnel
+      - name: Tunnel ngrok
         env:
+          NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
           CHAT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID: "7797309176"
         run: |
-          curl -L -o cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
-          chmod +x cloudflared
+          # satu agent, dua tunnel
+          cat > ngrok.yml <<EOF
+          version: "3"
+          agent:
+            authtoken: $NGROK_AUTHTOKEN
+          tunnels:
+            web:
+              proto: http
+              addr: 6080
+            nc:
+              proto: tcp
+              addr: 20022
+          EOF
 
-          # http
-          nohup ./cloudflared tunnel --no-autoupdate --url http://127.0.0.1:6080 > wtunnel.log 2>&1 &
-          URL=""
+          nohup ngrok start --all --config ngrok.yml --log=stdout > tunnel.log 2>&1 &
+
+          # tunggu sampai kedua tunnel siap (maks ~60 detik)
+          WEB=""; NC=""
           for i in $(seq 1 30); do
-            URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' wtunnel.log | head -1)
-            [ -n "$URL" ] && break
+            JSON=$(curl -s http://127.0.0.1:4040/api/tunnels)
+            WEB=$(echo "$JSON" | jq -r '[.tunnels[] | select(.name=="web")][0].public_url // empty')
+            NC=$(echo "$JSON" | jq -r '[.tunnels[] | select(.name=="nc")][0].public_url // empty')
+            [ -n "$WEB" ] && [ -n "$NC" ] && break
             sleep 2
           done
 
-          if [ -n "$URL" ]; then
-            MSG="WEB vscode: $URL/vnc.html"
+          if [ -n "$WEB" ]; then
+            MSG="WEB vscode: $WEB/vnc.html"
+          else
+            MSG="GAGAL web vscode url"
+            tail -n 20 tunnel.log
           fi
-
           curl -s "https://api.telegram.org/bot$CHAT_TOKEN/sendMessage" \
             -d chat_id="$CHAT_ID" --data-urlencode text="$MSG" > /dev/null
 
-
-          # nc
-          nohup ./cloudflared tunnel --no-autoupdate --url tcp://127.0.0.1:20022 > tunnel.log 2>&1 &
-
-          URL=""
-          for i in $(seq 1 30); do
-            URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' tunnel.log | head -1)
-            [ -n "$URL" ] && break
-            sleep 2
-          done
-
-          if [ -n "$URL" ]; then
-            MSG="NC Listener: $URL"
+          if [ -n "$NC" ]; then
+            MSG="NC Listener: ${NC#tcp://}"
           else
             MSG="GAGAL listener publik url"
           fi
-
           curl -s "https://api.telegram.org/bot$CHAT_TOKEN/sendMessage" \
             -d chat_id="$CHAT_ID" --data-urlencode text="$MSG" > /dev/null
 
       - name: Run nc listener
         run: |
-          # listener nc
-          while [ 1 ]; do busybox nc -l -p 20022 -e /bin/sh -i; echo "start nc listen"; done &
-
-          sleep 18000 # 5jam
+          # listener di port 20022 (sebelumnya step ini hanya sleep)
+          timeout 18000 nc -lvk -p 20022 || true # 5jam
