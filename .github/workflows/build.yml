@@ -31,13 +31,8 @@ jobs:
             "$IMAGE" bash -euxc '
             apt-get update
             DEBIAN_FRONTEND=noninteractive apt-get install -y \
-              xfce4 xfce4-goodies xfce4-terminal thunar-archive-plugin \
-              dbus-x11 policykit-1-gnome gvfs gvfs-backends xdg-utils \
-              fonts-dejavu fonts-noto fonts-noto-color-emoji \
-              greybird-gtk-theme elementary-xfce-icon-theme \
-              libgl1-mesa-dri locales \
-              tigervnc-standalone-server \
-              jq netcat-openbsd wget curl ca-certificates zstd gh gnupg
+              xfce4 tigervnc-standalone-server novnc xfce4-terminal \
+              dbus-x11 jq netcat-openbsd wget gh curl ca-certificates zstd
 
             wget https://bin.ngrok.com/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz
             tar -xzf ngrok-v3-stable-linux-amd64.tgz
