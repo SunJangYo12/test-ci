@@ -49,7 +49,7 @@ jobs:
           mkdir -p ~/.vnc
           echo "1234" | vncpasswd -f > ~/.vnc/passwd
           chmod 600 ~/.vnc/passwd
-          vncserver :1 -geometry 1600x900 -xstartup /usr/bin/startxfce4
+          vncserver :1 -geometry 1024x600 -xstartup /usr/bin/startxfce4
           websockify -D --web=/usr/share/novnc 6080 localhost:5901
           DISPLAY=:1 nohup code --no-sandbox --disable-gpu "$GITHUB_WORKSPACE" &
 
