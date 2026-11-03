@@ -40,7 +40,7 @@ jobs:
 
             #- name: Install VS Code + ekstensi CodeQL
             wget -qO code.deb "https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64"
-            apt-get install -y ./code.deb
+            #apt-get install -y ./code.deb
 
 
             #- name: Install CodeQL CLI
