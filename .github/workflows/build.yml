@@ -15,9 +15,13 @@ jobs:
       - name: Install desktop + noVNC + ngrok
         run: |
           sudo apt-get update
-          sudo apt-get install -y xfce4 tigervnc-standalone-server novnc websockify dbus-x11 jq netcat-openbsd
-          curl -sSL https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz | sudo tar -xz -C /usr/local/bin
-          ngrok version
+          sudo apt-get install -y xfce4 tigervnc-standalone-server novnc websockify dbus-x11 jq netcat-openbsd wget
+
+          wget https://bin.ngrok.com/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz
+          tar -xzf ngrok-v3-stable-linux-amd64.tgz
+          sudo sudo mv ngrok /usr/local/bin
+
+
 
       - name: Install VS Code + ekstensi CodeQL
         run: |
