@@ -13,8 +13,8 @@ on:
         type: boolean
         default: false
 
-# gh workflow run xubuntu-vm.yml -f mode=install
-# gh workflow run xubuntu-vm.yml -f mode=boot
+# gh workflow run build.yml -f mode=install --ref ci-boot-xubuntu22
+# gh workflow run build.yml -f mode=boot --ref ci-boot-xubuntu22
 
 jobs:
   vm:
@@ -60,7 +60,7 @@ jobs:
 
       - name: Jalankan QEMU
         env:
-          VNC_PASSWORD: ${{ secrets.VNC_PASSWORD }}
+          VNC_PASSWORD: "1234"
         run: |
           cd $WORK
           BOOT_ARGS=""
