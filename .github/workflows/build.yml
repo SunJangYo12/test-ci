@@ -59,48 +59,27 @@ jobs:
           CHAT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CHAT_ID: "7797309176"
         run: |
-          # satu agent, dua tunnel
-          cat > ngrok.yml <<EOF
-          version: "3"
-          agent:
-            authtoken: $NGROK_AUTHTOKEN
-          tunnels:
-            web:
-              proto: http
-              addr: 6080
-            nc:
-              proto: tcp
-              addr: 20022
-          EOF
 
-          nohup ngrok start --all --config ngrok.yml --log=stdout > tunnel.log 2>&1 &
+          nohup ngrok tcp 5901 --log=stdout > tunnel.log 2>&1 &
 
-          # tunggu sampai kedua tunnel siap (maks ~60 detik)
-          WEB=""; NC=""
+          # tunggu sampai ngrok siap (maks ~60 detik)
+          URL=""
           for i in $(seq 1 30); do
-            JSON=$(curl -s http://127.0.0.1:4040/api/tunnels)
-            WEB=$(echo "$JSON" | jq -r '[.tunnels[] | select(.name=="web")][0].public_url // empty')
-            NC=$(echo "$JSON" | jq -r '[.tunnels[] | select(.name=="nc")][0].public_url // empty')
-            [ -n "$WEB" ] && [ -n "$NC" ] && break
+            URL=$(curl -s http://127.0.0.1:4040/api/tunnels | jq -r '.tunnels[0].public_url // empty')
+            [ -n "$URL" ] && break
             sleep 2
           done
 
-          if [ -n "$WEB" ]; then
-            MSG="WEB vscode: $WEB/vnc.html"
+          if [ -n "$URL" ]; then
+            HOSTPORT="${URL#tcp://}"
+            MSG="[VNC] tiggervnc: $HOSTPORT"
           else
-            MSG="GAGAL web vscode url"
+            MSG="GAGAL vnc url"
             tail -n 20 tunnel.log
           fi
           curl -s "https://api.telegram.org/bot$CHAT_TOKEN/sendMessage" \
             -d chat_id="$CHAT_ID" --data-urlencode text="$MSG" > /dev/null
 
-          if [ -n "$NC" ]; then
-            MSG="NC Listener: ${NC#tcp://}"
-          else
-            MSG="GAGAL listener publik url"
-          fi
-          curl -s "https://api.telegram.org/bot$CHAT_TOKEN/sendMessage" \
-            -d chat_id="$CHAT_ID" --data-urlencode text="$MSG" > /dev/null
 
       - name: Run nc listener
         run: |
