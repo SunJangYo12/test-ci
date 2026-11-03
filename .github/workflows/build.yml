@@ -13,8 +13,8 @@ on:
         type: boolean
         default: false
 
-# gh workflow run build.yml -f mode=install --ref ci-boot-xubuntu22
-# gh workflow run build.yml -f mode=boot --ref ci-boot-xubuntu22
+# gh workflow run build.yml -f mode=install --ref ci-boot-xubuntu22 NOTE: setelah selsai tekan shutdown klik enter
+# gh workflow run build.yml -f mode=boot save=true --ref ci-boot-xubuntu22
 
 jobs:
   vm:
