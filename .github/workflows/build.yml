@@ -21,7 +21,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y qemu-system-x86 qemu-utils novnc websockify socat jq wget
 
-          wget https://bin.ngrok.com/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz | sudo tar -xz -C /usr/local/bin
+          wget https://bin.ngrok.com/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz
+          ls -la
+          pwd
+          tar -xz ngrok-v3-stable-linux-amd64.tgz
+          sudo sudo mv ngrok /usr/local/bin
 
           ngrok version
 
