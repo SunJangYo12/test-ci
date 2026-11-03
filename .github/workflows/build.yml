@@ -47,7 +47,7 @@ jobs:
       - name: Start VNC + noVNC
         run: |
           mkdir -p ~/.vnc
-          echo "${{ secrets.VNC_PASSWORD }}" | vncpasswd -f > ~/.vnc/passwd
+          echo "1234" | vncpasswd -f > ~/.vnc/passwd
           chmod 600 ~/.vnc/passwd
           vncserver :1 -geometry 1600x900 -xstartup /usr/bin/startxfce4
           websockify -D --web=/usr/share/novnc 6080 localhost:5901
