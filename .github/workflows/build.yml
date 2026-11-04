@@ -119,18 +119,36 @@ jobs:
           curl -s "https://api.telegram.org/bot$CHAT_TOKEN/sendMessage" \
             -d chat_id="$CHAT_ID" --data-urlencode text="$MSG" > /dev/null
 
+
       - name: Tunggu VM mati
         run: |
-          # tunggu sampai kamu shutdown dari dalam VM (maks 5,5 jam)
-          for i in $(seq 1 1980); do
-            pgrep -x qemu-system-x86 > /dev/null || break
+          mon() { echo "$1" | socat - UNIX-CONNECT:/tmp/qemu-mon.sock > /dev/null 2>&1 || true; }
+          alive() { pgrep -x qemu-system-x86 > /dev/null; }
+
+          # tunggu kamu shutdown dari dalam VM (maks 4,5 jam, sisakan waktu untuk kompres + upload)
+          for i in $(seq 1 1620); do
+            alive || break
             sleep 10
           done
-          # kalau masih hidup, matikan dengan rapi supaya disk tidak korup
-          if pgrep -x qemu-system-x86 > /dev/null; then
-            echo "system_powerdown" | socat - UNIX-CONNECT:/tmp/qemu-mon.sock || true
-            sleep 90
+
+          # masih hidup: minta guest mati dengan rapi (maks 90 detik)
+          if alive; then
+            echo "VM masih hidup, kirim system_powerdown"
+            mon system_powerdown
+            for i in $(seq 1 18); do alive || break; sleep 5; done
           fi
+
+          # masih hidup juga: hentikan QEMU lewat monitor
+          if alive; then
+            echo "Guest tidak merespons, paksa quit"
+            mon quit
+            for i in $(seq 1 12); do alive || break; sleep 5; done
+          fi
+
+          # pastikan benar-benar mati sebelum disk dibuka
+          pkill -9 -x qemu-system-x86 || true
+          sleep 2
+          alive && { echo "QEMU masih ada"; exit 1; } || echo "QEMU sudah berhenti"
 
       - name: Kompres disk
         if: env.MODE == 'install' || inputs.save
