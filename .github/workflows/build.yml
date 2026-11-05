@@ -40,6 +40,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y qemu-system-x86 qemu-utils socat jq
           curl -sSL https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz | sudo tar -xz -C /usr/local/bin
+          curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
+          chmod +x cloudflared
+
 
       - name: Siapkan disk (mode install)
         if: env.MODE == 'install'
@@ -81,7 +84,25 @@ jobs:
           sleep 5
           echo "set_password vnc $VNC_PASSWORD" | socat - UNIX-CONNECT:/tmp/qemu-mon.sock
 
+      - name: Tunnel Cloudflare
+        env:
+          CHAT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: "7797309176"
+        run: |
+          ./cloudflared tunnel --no-autoupdate --url tcp://localhost:5900 > tunnel.log 2>&1 &
+          sleep 10
+          URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' tunnel.log | head -1)
+
+          if [ -n "$URL" ]; then
+            MSG="[VNC] tiggervnc: $URL"
+          else
+            MSG="GAGAL vnc url"
+          fi
+          curl -s "https://api.telegram.org/bot$CHAT_TOKEN/sendMessage" \
+            -d chat_id="$CHAT_ID" --data-urlencode text="$MSG" > /dev/null
+
       - name: Tunnel ngrok
+        if: false
         env:
           NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
           CHAT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
