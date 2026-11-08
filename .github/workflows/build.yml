@@ -14,7 +14,7 @@ on:
         default: false
 
 # gh workflow run build.yml -f mode=install --ref ci-boot-xubuntu22 NOTE: setelah selsai tekan shutdown klik enter
-# gh workflow run build.yml --ref ci-boot-xubuntu22 -f mode=boot -f save=true
+# gh workflow run build.yml --ref ci-boot-xubuntu22 -f mode=boot -f save=false
 
 jobs:
   vm:
@@ -96,7 +96,9 @@ jobs:
           if [ -n "$URL" ]; then
             MSG="[VNC] tiggervnc: $URL"
           else
-            MSG="GAGAL vnc url"
+            CMD=`ls`
+            DAT=$(printf '%s\n' "$CMD")
+            MSG="GAGAL vnc url:$URL $DAT"
           fi
           curl -s "https://api.telegram.org/bot$CHAT_TOKEN/sendMessage" \
             -d chat_id="$CHAT_ID" --data-urlencode text="$MSG" > /dev/null
