@@ -149,11 +149,17 @@ jobs:
           alive() { pgrep -x qemu-system-x86 > /dev/null; }
 
           # tunggu kamu shutdown dari dalam VM (maks 4,5 jam, sisakan waktu untuk kompres + upload)
-          for i in $(seq 1 1620); do
-            alive || break
-            sleep 10
-          done
-
+          if [ "$MODE" == "boot" ]; then
+            for i in $(seq 1 1980); do # 5.5jam
+              alive || break
+              sleep 10
+            done
+          else
+            for i in $(seq 1 1620); do
+              alive || break
+              sleep 10
+            done
+          fi
           # masih hidup: minta guest mati dengan rapi (maks 90 detik)
           if alive; then
             echo "VM masih hidup, kirim system_powerdown"
