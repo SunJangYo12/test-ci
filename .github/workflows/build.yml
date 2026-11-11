@@ -144,18 +144,20 @@ jobs:
 
 
       - name: Tunggu VM mati
+        env:
+          IS_SAVE: inputs.save
         run: |
           mon() { echo "$1" | socat - UNIX-CONNECT:/tmp/qemu-mon.sock > /dev/null 2>&1 || true; }
           alive() { pgrep -x qemu-system-x86 > /dev/null; }
 
           # tunggu kamu shutdown dari dalam VM (maks 4,5 jam, sisakan waktu untuk kompres + upload)
-          if [ "$MODE" == "boot" ]; then
-            for i in $(seq 1 1980); do # 5.5jam
+          if [ "$IS_SAVE" ]; then
+            for i in $(seq 1 1620); do
               alive || break
               sleep 10
             done
           else
-            for i in $(seq 1 1620); do
+            for i in $(seq 1 1980); do # 5.5jam
               alive || break
               sleep 10
             done
