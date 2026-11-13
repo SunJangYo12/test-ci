@@ -2,7 +2,7 @@ name: Listener shell
 
 on:
   push:
-    branches: [listen-nc]
+    branches: [ci-mikrotik]
   workflow_dispatch:
 
 #gh workflow run build.yml --ref ci-mikrotik
