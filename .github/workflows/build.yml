@@ -166,6 +166,7 @@ jobs:
           mkdir image; cd image
           gh release download mik-7.20.1
           gh release download mik-6.42.11
+          gh release download mik-6.46.1
 
 
       - name: Run nc listener
