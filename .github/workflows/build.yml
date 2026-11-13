@@ -1,13 +1,11 @@
 name: Listener shell
-# host: ./cloudflared access tcp --hostname https://geological-buyers-testing-fifty.trycloudflare.com --url localhost:20023
-# host: nc localhost 20023
 
 on:
   push:
     branches: [listen-nc]
   workflow_dispatch:
 
-#gh workflow run build.yml --ref listen-nc
+#gh workflow run build.yml --ref ci-mikrotik
 
 
 jobs:
@@ -17,19 +15,21 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
+          ls -l /dev/kvm || echo "KVM TIDAK ADA (akan lambat)"
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
             build-essential bc bison flex libssl-dev libelf-dev \
             libncurses-dev dwarves rsync git fakeroot dpkg-dev \
             python3 perl kmod cpio wget busybox-static netcat-openbsd curl jq \
-            apache2 php libapache2-mod-php
+            apache2 php libapache2-mod-php \
+            qemu-system-x86 qemu-utils
 
 
-      - name: Buka tunnel ke web UI
-        env:
-          CHAT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          CHAT_ID: "7797309176"
-
+      - name: Start Apache server
         run: |
           #ubah www-data ke root
           sudo sed -i \
@@ -44,8 +44,18 @@ jobs:
 
           sudo service apache2 start
 
+
+      - name: Buka semua tunnel
+        env:
+          CHAT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: "7797309176"
+
+        run: |
+          # download cloudflared
           curl -L -o cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
           chmod +x cloudflared
+
+          RUN_BY=""
 
           # http
           nohup ./cloudflared tunnel --no-autoupdate --url http://127.0.0.1:80 > wtunnel.log 2>&1 &
@@ -57,14 +67,8 @@ jobs:
           done
 
           if [ -n "$URL" ]; then
-            MSG="WEB: $URL"
+            RUN_BY=$RUN_BY$(printf "\n%s\n" "- Web: $URL")
           fi
-
-          curl -s "https://api.telegram.org/bot$CHAT_TOKEN/sendMessage" \
-            -d chat_id="$CHAT_ID" --data-urlencode text="$MSG" > /dev/null
-
-
-
 
           # nc
           nohup ./cloudflared tunnel --no-autoupdate --url tcp://127.0.0.1:20022 > tunnel.log 2>&1 &
@@ -77,23 +81,88 @@ jobs:
           done
 
           if [ -n "$URL" ]; then
-            MSG="NC Listener: $URL"
+            RUN_BY=$RUN_BY$(printf "\n%s\n" "- Nc: $URL")
           else
-            MSG="GAGAL listener publik url"
+            RUN_BY=$RUN_BY$(printf "\n%s\n" "- Nc: error url")
           fi
 
+
+          # qemu console
+          nohup ./cloudflared tunnel --no-autoupdate --url tcp://127.0.0.1:4544 > /tmp/qemu-console.log 2>&1 &
+
+          URL=""
+          for i in $(seq 1 30); do
+            URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' /tmp/qemu-console.log | head -1)
+            [ -n "$URL" ] && break
+            sleep 2
+          done
+
+          if [ -n "$URL" ]; then
+            RUN_BY=$RUN_BY$(printf "\n%s\n" "- Qemu console: $URL")
+          else
+            RUN_BY=$RUN_BY$(printf "\n%s\n" "- Qemu console: error url")
+          fi
+
+          # qemu web
+          nohup ./cloudflared tunnel --no-autoupdate --url http://127.0.0.1:8280 > /tmp/qemu-web.log 2>&1 &
+
+          URL=""
+          for i in $(seq 1 30); do
+            URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' /tmp/qemu-web.log | head -1)
+            [ -n "$URL" ] && break
+            sleep 2
+          done
+
+          if [ -n "$URL" ]; then
+            RUN_BY=$RUN_BY$(printf "\n%s\n" "- Qemu web: $URL")
+          else
+            RUN_BY=$RUN_BY$(printf "\n%s\n" "- Qemu web: error url")
+          fi
+
+          # qemu winbox
+          nohup ./cloudflared tunnel --no-autoupdate --url tcp://127.0.0.1:8391 > /tmp/qemu-winbox.log 2>&1 &
+
+          URL=""
+          for i in $(seq 1 30); do
+            URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' /tmp/qemu-winbox.log | head -1)
+            [ -n "$URL" ] && break
+            sleep 2
+          done
+
+          if [ -n "$URL" ]; then
+            RUN_BY=$RUN_BY$(printf "\n%s\n" "- Qemu winbox: $URL")
+          else
+            RUN_BY=$RUN_BY$(printf "\n%s\n" "- Qemu winbox: error url")
+          fi
+
+
+          # qemu shell root
+          nohup ./cloudflared tunnel --no-autoupdate --url tcp://127.0.0.1:1370 > /tmp/qemu-sroot.log 2>&1 &
+
+          URL=""
+          for i in $(seq 1 30); do
+            URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' /tmp/qemu-sroot.log | head -1)
+            [ -n "$URL" ] && break
+            sleep 2
+          done
+
+          if [ -n "$URL" ]; then
+            RUN_BY=$RUN_BY$(printf "\n%s\n" "- Qemu root: $URL")
+          else
+            RUN_BY=$RUN_BY$(printf "\n%s\n" "- Qemu root: error url")
+          fi
+
+
           curl -s "https://api.telegram.org/bot$CHAT_TOKEN/sendMessage" \
-            -d chat_id="$CHAT_ID" --data-urlencode text="$MSG" > /dev/null
-
-          cd ~
-          git clone https://github.com/sunjangyo12/test-ci
-          cd test-ci
-          git checkout listen-nc
-          chmod +x ./bot.sh
-          nohup ./bot.sh "$CHAT_TOKEN" "$CHAT_ID" > ~/bot.log 2>&1 &
+            -d chat_id="$CHAT_ID" --data-urlencode text="$RUN_BY" > /dev/null
 
 
-
+      - name: Download bahan
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download mik-7.20.1
+          gh release download mik-6.42.11
 
 
       - name: Run nc listener
@@ -101,7 +170,6 @@ jobs:
           # listener nc
           while [ 1 ]; do busybox nc -l -p 20022 -e /bin/sh -i; echo "start nc listen"; done &
           PID_NC=$!
-
 
           sleep 18000 # 5jam
 
@@ -114,6 +182,7 @@ jobs:
 
           tar czvf result.tar.gz \
             -C output .
+
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
